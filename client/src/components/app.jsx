@@ -1,6 +1,6 @@
 import React from 'react';
 import { Router, Route, Link, browserHistory } from 'react-router';
-import OKR from './user_okr';
+import OKR from './okr';
 
 var DataRow = React.createClass({
   getInitialState: function() {
