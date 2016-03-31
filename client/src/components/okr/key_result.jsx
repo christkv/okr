@@ -13,7 +13,7 @@ export default React.createClass({
   render: function() {
     // Handle if the component is in edit more or not
     var keyResult = this.props.edit
-      ? ( <input type='text' value={this.props.data.keyResult} onChange={this.onChange}/> )
+      ? ( <textarea onChange={this.onChange}>{this.props.data.keyResult}</textarea> )
       : ( <label>{this.props.data.keyResult}</label> );
 
     // Render any tags if they exist
@@ -23,19 +23,26 @@ export default React.createClass({
     var labels = tags.map((tag, index) => {
       if(this.props.edit) {
         return (
-          <Label bsStyle='info' key={index}>
-            {tag}
-          </Label>
+          <span>
+            <Label bsStyle='info' key={index}>
+              {tag}
+            </Label>
+            <br/>
+          </span>
         )
       } else {
-        return ( <Label bsStyle='info' key={index}>{tag}</Label>)
+        return (
+          <span>
+            <Label bsStyle='info' key={index}>{tag}</Label><br/>
+          </span>
+        )
       }
     });
 
     // Create add tag button if we are in edit mode
     var addTag = this.props.edit
       ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Add tag">Add a tag to the key result.</Popover>}>
-            <button type="button" style={{fontSize:8}} className="btn btn-default btn-xs" onClick={this.onAddTag}>
+            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-xs" onClick={this.onAddTag}>
               Edit
             </button>
           </OverlayTrigger> )
@@ -49,8 +56,8 @@ export default React.createClass({
           &nbsp;
           {addTag}
         </td>
-        <td>{keyResult}</td>
-        <td>
+        <td width='75%'>{keyResult}</td>
+        <td width='25%'>
           <ProgressBar now={this.props.data.completeness} label="%(percent)s%" />
         </td>
       </tr>
