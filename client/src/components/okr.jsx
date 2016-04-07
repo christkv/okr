@@ -45,26 +45,23 @@ export default React.createClass({
       if(e.type == 'keyResultChange') {
         yield Store.OKR().dispatch({type: Store.OKR_CHANGED, value: e});
         self.setState(Store.OKR().getState());
-      } else if(e.type == 'removeTag') {
-
-      } else if(e.type == 'addTag') {
+      } else if(e.type == 'addKeyResultTag') {
         // Load the tags
         yield Store.Tags().load();
         // Set the modal controller to visible
         self.state.modalIsOpen = true;
-
         // Set the modal payload
         self.state.modalData = {
-          id: e.keyResultId,
-          type: 'keyResult',
-          object: e.keyResult,
-          text: e.keyResult.keyResult,
-          tags: e.keyResult.tags,
+          id: e.keyResultId, type: 'keyResult', object: e.keyResult,
+          text: e.keyResult.keyResult, tags: e.keyResult.tags,
           suggestions: Store.Tags().tags()
         }
 
-        // Set the state
+        // Update the state
         self.setState(self.state);
+      } else if(e.type == 'ratingChanged') {
+        yield Store.OKR().dispatch({type: Store.OKR_RATING_CHANGED, value: e});
+        self.setState(Store.OKR().getState());
       }
     });
   },
@@ -98,7 +95,10 @@ export default React.createClass({
         <Objective key={objective.id}
             data={objective}
             edit={this.state.edit}
-            onObjectiveChange={this.onObjectiveChange}/>
+            rate={Store.OKR().canRate()}
+            tags={objective.tags}
+            onObjectiveChange={this.onObjectiveChange}
+        />
       )
     });
 

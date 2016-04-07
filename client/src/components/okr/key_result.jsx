@@ -1,19 +1,30 @@
 import React from 'react';
 import {ProgressBar, Label, Popover, OverlayTrigger} from 'react-bootstrap';
+import NumberInput from 'react-number-input';
 
 export default React.createClass({
   onChange: function(e) {
-    if(this.props.onChange) this.props.onChange('modifiedText', e.target.value, this.props.data);
+    if(this.props.onChange) {
+      this.props.onChange('modifiedText', e.target.value, this.props.data);
+    }
   },
 
   onAddTag: function(e) {
-    if(this.props.onChange) this.props.onChange('addTag', null, this.props.data);
+    if(this.props.onChange) {
+      this.props.onChange('addTag', null, this.props.data);
+    }
+  },
+
+  onRatingChange: function(value) {
+    if(this.props.onChange) {
+      this.props.onChange('ratingChanged', parseInt(event.target.value, 10), this.props.data);
+    }
   },
 
   render: function() {
     // Handle if the component is in edit more or not
     var keyResult = this.props.edit
-      ? ( <textarea onChange={this.onChange}>{this.props.data.keyResult}</textarea> )
+      ? ( <textarea onChange={this.onChange} value={this.props.data.keyResult}/> )
       : ( <label>{this.props.data.keyResult}</label> );
 
     // Render any tags if they exist
@@ -23,8 +34,8 @@ export default React.createClass({
     var labels = tags.map((tag, index) => {
       if(this.props.edit) {
         return (
-          <span>
-            <Label bsStyle='info' key={index}>
+          <span key={index}>
+            <Label bsStyle='info'>
               {tag}
             </Label>
             <br/>
@@ -32,8 +43,8 @@ export default React.createClass({
         )
       } else {
         return (
-          <span>
-            <Label bsStyle='info' key={index}>{tag}</Label><br/>
+          <span key={index}>
+            <Label bsStyle='info'>{tag}</Label><br/>
           </span>
         )
       }
@@ -48,9 +59,26 @@ export default React.createClass({
           </OverlayTrigger> )
       : (<span/>);
 
+    // Handle progress bar
+    var progressBar = !this.props.rate
+      ? ( <ProgressBar
+        key={this.props.data.id}
+        now={this.props.data.completeness}
+        label="%(percent)s%" /> )
+      : ( <NumberInput
+        key={this.props.data.id}
+        type='number'
+        min={0}
+        max={100}
+        format="0"
+        value={this.props.data.completeness}
+        className='form-control'
+        onChange={this.onRatingChange} />);
+
     // Render the key result
     return (
       <tr>
+        <td></td>
         <td>
           {labels}
           &nbsp;
@@ -58,7 +86,7 @@ export default React.createClass({
         </td>
         <td width='75%'>{keyResult}</td>
         <td width='25%'>
-          <ProgressBar now={this.props.data.completeness} label="%(percent)s%" />
+          {progressBar}
         </td>
       </tr>
     );

@@ -4,8 +4,6 @@ import Store from '../../store';
 import co from 'co';
 import {WithContext} from 'react-tag-input';
 
-console.log(WithContext)
-
 export default React.createClass({
   getInitialState: function() {
     return {

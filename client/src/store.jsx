@@ -3,10 +3,12 @@
 import co from 'co';
 
 var fakeState = {
-  edit:false,
+  edit: false,
+  rate: true,
   objectives: [{
     id: 1,
     objective: 'objective 1',
+    tags: ['core'],
 
     keyResults: [{
       id: 5,
@@ -67,6 +69,23 @@ var keyResultChanged = function(state, change) {
   })
 }
 
+// Update the keyResult rating
+var keyResultRatingChanged = function(state, objectiveId, keyResultId, value) {
+  return state.objectives.map(function(objective) {
+    if(objective.id == objectiveId) {
+      objective.keyResults = objective.keyResults.map((keyResult) => {
+        if(keyResult.id == keyResultId) {
+          keyResult.completeness = value;
+        }
+
+        return keyResult;
+      });
+    }
+
+    return objective;
+  })
+}
+
 class OKRState {
   constructor() {
     this.state = {objectives: [], edit:false, modalData: {}, modalIsOpen: false};
@@ -74,6 +93,15 @@ class OKRState {
 
   getState() {
     return this.state;
+  }
+
+  canRate() {
+    // Current viewer yet
+    if(!this.currentViewingUser) return false;
+    // Is the viewing user the same as the okr owner
+    if(this.currentViewingUser.getUsername() == this.userId) return true;
+    // Cannot rate
+    return false;
   }
 
   canEdit() {
@@ -118,6 +146,13 @@ class OKRState {
         this.state.objectives = action.value.type == 'objectiveChange'
           ? objectiveChanged(this.state, action.value)
           : keyResultChanged(this.state, action.value);
+      } else if(action.type == Store.OKR_RATING_CHANGED) {
+        console.log("------------------------------------------")
+        console.log(action)
+
+        this.state.objectives = keyResultRatingChanged(this.state,
+          action.value.objectiveId,
+          action.value.keyResultId, action.value.value)
       }
 
       resolve();
@@ -194,3 +229,4 @@ export default class Store {
 
 Store.OKR_EDIT_BUTTON_CLICKED = 'OKR_EDIT_BUTTON_CLICKED';
 Store.OKR_CHANGED = 'OKR_CHANGED';
+Store.OKR_RATING_CHANGED = 'OKR_RATING_CHANGED';

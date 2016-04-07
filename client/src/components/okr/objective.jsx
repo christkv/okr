@@ -1,5 +1,5 @@
 import React from 'react';
-import {ProgressBar} from 'react-bootstrap';
+import {ProgressBar, Label, OverlayTrigger, Popover} from 'react-bootstrap';
 import KeyResult from './key_result';
 
 export default React.createClass({
@@ -14,15 +14,16 @@ export default React.createClass({
         type: 'keyResultChange', objectiveId: this.props.data.id,
         keyResultId: keyResult.id, value: value
       });
-    } else if(change == 'removedTag' && this.props.onObjectiveChange) {
-      this.props.onObjectiveChange({
-        type: 'removeTag', objectiveId: this.props.data.id,
-        keyResultId: keyResult.id, keyResult: keyResult
-      });
     } else if(change == 'addTag' && this.props.onObjectiveChange) {
       this.props.onObjectiveChange({
-        type: 'addTag', objectiveId: this.props.data.id,
+        type: 'addKeyResultTag', objectiveId: this.props.data.id,
         keyResultId: keyResult.id, keyResult: keyResult
+      });
+    } else if(change == 'ratingChanged' && this.props.onObjectiveChange) {
+      this.props.onObjectiveChange({
+        type: 'ratingChanged', objectiveId: this.props.data.id,
+        keyResultId: keyResult.id, keyResult: keyResult,
+        value: value
       });
     }
   },
@@ -37,11 +38,23 @@ export default React.createClass({
     }
   },
 
+  // Add a tag
+  onAddTag: function(e) {
+    if(this.props.onChange) {
+      this.props.onChange('addTag', null, this.props.data);
+    }
+  },
+
   // Render the component
   render: function() {
     // Render the key results
     var keyResults = this.props.data.keyResults.map((keyResult) => {
-      return <KeyResult key={keyResult.id} data={keyResult} edit={this.props.edit} onChange={this.onKeyResultChange}/>
+      return <KeyResult
+        key={keyResult.id}
+        data={keyResult}
+        edit={this.props.edit}
+        rate={this.props.rate}
+        onChange={this.onKeyResultChange}/>
     });
 
     // Handle if the component is in edit more or not
@@ -49,13 +62,59 @@ export default React.createClass({
       ? ( <input type='text' value={this.props.data.objective} onChange={this.onObjectiveChange}/> )
       : ( <label>{this.props.data.objective}</label> );
 
+    // Objective calculation
+    var okrCalculation = this.props.data.keyResults.map(function(keyResult) {
+      return parseInt(keyResult.completeness, 10);
+    }).reduce(function(prev, current) {
+      return prev + current;
+    }, 0) / this.props.data.keyResults.length;
+    okrCalculation = isNaN(okrCalculation) ? 0 : okrCalculation;
+
+    // Render any tags if they exist
+    var tags = this.props.data.tags || [];
+
+    // Render all the tag labels
+    var labels = tags.map((tag, index) => {
+      if(this.props.edit) {
+        return (
+          <span key={index}>
+            <Label bsStyle='info'>
+              {tag}
+            </Label>
+            <br/>
+          </span>
+        )
+      } else {
+        return (
+          <span key={index}>
+            <Label bsStyle='info'>{tag}</Label><br/>
+          </span>
+        )
+      }
+    });
+
+    // Create add tag button if we are in edit mode
+    var addTag = this.props.edit
+      ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Add tag">Add a tag to the objective.</Popover>}>
+            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-xs" onClick={this.onAddTag}>
+              Edit
+            </button>
+          </OverlayTrigger> )
+      : (<span/>);
+
     // Render the template for an objective
     return (
       <div>
         <table className="table table-striped">
           <tbody>
             <tr>
-              <td colSpan="3">{objective}</td>
+              <td>
+                {labels}
+                &nbsp;
+                {addTag}
+              </td>
+              <td colSpan="2">{objective}</td>
+              <td><ProgressBar now={okrCalculation} label="%(percent)s%" /></td>
             </tr>
             {keyResults}
           </tbody>
