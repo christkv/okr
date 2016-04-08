@@ -1,11 +1,22 @@
 import React from 'react';
 import co from 'co';
 import Comment from './comment';
-import Form from './form';
 
 export default React.createClass({
   getInitialState: function() {
     return {}
+  },
+
+  onReply: function(e) {
+    if(this.props.onReply) {
+      this.props.onReply(e);
+    }
+  },
+
+  onEdit: function(e) {
+    if(this.props.onEdit) {
+      this.props.onEdit(e);
+    }
   },
 
   render: function() {
@@ -13,10 +24,15 @@ export default React.createClass({
     var user = this.props.user || {};
 
     // Generate the objects
-    var commentObjects = comments.map(function(x) {
+    var commentObjects = comments.map((x) => {
       return (
-        <div className='comment'>
-          <Comment key={x.id} data={x} user={user}/>
+        <div className='comment' key={x.id}>
+          <Comment
+            data={x}
+            user={user}
+            onReply={this.onReply}
+            onEdit={this.onEdit}
+            />
           <hr/>
         </div>
       );

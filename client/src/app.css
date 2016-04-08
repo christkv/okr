@@ -12,10 +12,19 @@
   width: 99%;
 }
 
+.comment a {
+  margin-right: 5px;
+}
+
 .comment .comment_reply_box_buttons {
   background-color: lightgray;
   padding-top: 5px;
   padding-bottom: 5px;
+}
+
+.comment .comment_edit_box_buttons {
+  background-color: lightgray;
+  padding-bottom: 5px;  
 }
 
 .comment .comment_reply_box {
@@ -30,6 +39,10 @@
   background-color: lightgray;
   padding-top: 5px;
   padding-bottom: 5px;
+}
+
+.comment .comment_row textarea {
+  width: 99%;
 }
 
 .comment .comment_operations_row {
@@ -50,15 +63,6 @@
 .comment .from {
   font-weight: bolder;
 }
-
-/*.row > div {
-    margin-top:10px;
-    padding: 20px;
-    outline: 2px solid #ccc;
-    outline-offset: -10px;
-    -moz-outline-radius: 10px;
-    -webkit-outline-radius: 10px;
- }*/
 
 table td textarea {
   width: 100%;

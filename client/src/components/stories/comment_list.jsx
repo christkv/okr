@@ -11,7 +11,7 @@ storiesOf('Comments List', module)
         avatar: 'http://38.media.tumblr.com/avatar_b388702f3728_128.png',
         created: new Date(),
         from: 'Christian Kvalheim',
-        from_id: 'christkv',
+        from_username: 'christkv',
         message: 'hello mate, **how** are you',
         resolved: false,
 
@@ -20,7 +20,7 @@ storiesOf('Comments List', module)
           avatar: 'https://a1.memecaptain.com/src_thumbs/6023.gif',
           created: new Date(),
           from: 'Peter Peterson',
-          from_id: 'peter',
+          from_username: 'peter',
           to: 'christkv',
           message: 'i completely agree'
         }]
@@ -29,7 +29,7 @@ storiesOf('Comments List', module)
         avatar: 'https://a1.memecaptain.com/src_thumbs/6023.gif',
         created: new Date(),
         from: 'Peter Peterson',
-        from_id: 'peter',
+        from_username: 'peter',
         message: 'hello mate',
         resolved: true
       }]
@@ -43,7 +43,12 @@ storiesOf('Comments List', module)
 
     return (
       <div className="comments">
-        <List data={comments} user={user}/>
+        <List
+          data={comments}
+          user={user}
+          onReply={action('onReply')}
+          onEdit={action('onEdit')}
+        />
       </div>
     );
   })

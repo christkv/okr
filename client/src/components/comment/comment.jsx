@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import co from 'co';
 import {Image, Input, Button, ButtonToolbar} from 'react-bootstrap';
 import marked from 'marked';
@@ -19,49 +20,114 @@ var renderMarkdown = function(comment) {
 export default React.createClass({
   getInitialState: function() {
     return {
-      reply:false
+      reply: false,
+      edit: false,
+      replyText: '',
+      comment: this.props.data.message
     }
   },
 
   onReplyClicked: function() {
-    console.log("onReplyClicked ----");
+    // Render the buttons
+    this.setState({reply:true});
+    // Set focus on textarea
+    ReactDOM.findDOMNode(this.refs.replyTextarea).focus();
+  },
+
+  onEditClicked: function(e) {
+    this.setState({edit:true, reply:false});
+  },
+
+  onEditChange: function(e) {
+    this.setState({comment: e.target.value});
+  },
+
+  onReplyChange: function(e) {
+    this.setState({replyText: e.target.value});
+  },
+
+  onEditFocus: function(e) {
+    this.setState({edit:true, reply:false});
+  },
+
+  onEditSave: function(e) {
+    // Get the edited value
+    var message = ReactDOM.findDOMNode(this.refs.editTextarea).value;
+
+    // Set the state of the component
+    this.setState({edit:false, reply:false});
+
+    // Fire the onEdit handler
+    if(this.props.onEdit) {
+      this.props.onEdit({
+        id: this.props.data.id,
+        message: message
+      });
+    }
   },
 
   onReply: function() {
-    console.log("onReply ----");
-    this.setState({reply:false});
+    // Disable the button bar
+    this.setState({reply:false, replyText: ''});
+    // Fire the onReply handler
+    if(this.props.onReply) {
+      this.props.onReply({
+        id: this.props.data.id,
+        message: this.state.reply
+      });
+    }
+
+    // Clean out the text
+    ReactDOM.findDOMNode(this.refs.replyTextarea).value = '';
   },
 
   onFocus: function(e) {
-    console.log("onFocus ----")
     this.setState({reply:true});
   },
 
   onBlur: function(e) {
-    console.log("onBlur ----")
-    console.log(e)
     this.setState({reply:false});
   },
 
+  onReplyCancel: function(e) {
+    this.setState({reply:false, replyText: ''});
+  },
+
+  onEditBlur: function() {
+    this.setState({reply:false, edit:false});
+  },
+
   onClick: function(e) {
-    console.log("onClick ----")
-    if(e.target.type != 'button' && e.target.type != 'textarea') {
+    if(e.target.type != 'button'
+      && e.target.type != 'textarea'
+      && e.target.localName != 'a') {
       this.setState({reply:false});
     }
   },
 
   render: function() {
-    console.log(this.props.data)
     var comment = this.props.data || {};
     var user = this.props.user || {};
+    var username = this.props.user.username;
+    var currentUser = username == comment.from_username;
+
     // Build the list of replies if any
     var replies = comment.replies || [];
+
     // Render all the replies
     var replyObjects = replies.map(function(reply) {
-      return (
-        <Reply key={reply.id} data={reply}/>
-      )
+      return ( <Reply key={reply.id} data={reply}/> )
     });
+
+    // Either show editor or render the text
+    var message = this.state.edit
+      ? ( <Textarea ref='editTextarea' onFocus={this.onEditFocus} onChange={this.onEditChange} minRows={1} value={this.state.comment}/> )
+      : ( <div dangerouslySetInnerHTML={renderMarkdown(this.state.comment)} /> );
+
+    // Edit button
+    var editButton = currentUser
+      ? ( <a href="#" onClick={this.onEditClicked}>Edit</a> )
+      : ( <div/> );
 
     // Render the reply buttons
     var replyButtons = this.state.reply
@@ -72,7 +138,21 @@ export default React.createClass({
           <div className='col-xs-11'>
             <ButtonToolbar>
               <Button bsStyle="primary" bsSize="small" onClick={this.onReply}>Reply</Button>
-              <Button bsStyle="default" bsSize="small" onClick={this.onBlur}>Cancel</Button>
+              <Button bsStyle="default" bsSize="small" onClick={this.onReplyCancel}>Cancel</Button>
+            </ButtonToolbar>
+          </div>
+        </div>
+      )
+      : (<div/>);
+
+    // Buttons for message editing
+    var editButtons = this.state.edit
+      ? (
+        <div className='row comment_edit_box_buttons'>
+          <div className='col-xs-12'>
+            <ButtonToolbar>
+              <Button bsStyle="primary" bsSize="small" onClick={this.onEditSave}>Save</Button>
+              <Button bsStyle="default" bsSize="small" onClick={this.onEditBlur}>Cancel</Button>
             </ButtonToolbar>
           </div>
         </div>
@@ -98,13 +178,17 @@ export default React.createClass({
               </div>
             </div>
             <div className='row comment_row'>
-              <div className='col-xs-12'
-                dangerouslySetInnerHTML={renderMarkdown(comment.message)} >
+              <div className='col-xs-12'>
+                {message}
               </div>
             </div>
+            {editButtons}
             <div className='row comment_operations_row'>
               <div className='col-xs-12'>
-                <a href="#" onClick={this.onReplyClicked}>Reply</a>
+                <ButtonToolbar>
+                  <a href="#" onClick={this.onReplyClicked}>Reply</a>
+                  {editButton}
+                </ButtonToolbar>
               </div>
             </div>
             <div className='row'>
@@ -118,7 +202,7 @@ export default React.createClass({
                   <Image src={user.avatar} rounded className='avatar_min'/>
                 </div>
                 <div className='col-xs-11'>
-                  <Textarea onFocus={this.onFocus} minRows={1} placeholder='Add a comment' />
+                  <Textarea ref='replyTextarea' onFocus={this.onFocus} onChange={this.onReplyChange} value={this.state.replyText} minRows={1} placeholder='Add a comment' />
                 </div>
               </div>
             </div>
