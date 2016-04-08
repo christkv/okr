@@ -23,7 +23,7 @@ storiesOf('Objective', module)
 
     return (
       <div className="objective1">
-        <Objective data={objective} onChange={action('onChange')}/>
+        <Objective data={objective} onObjectiveChange={action('onObjectiveChange')}/>
       </div>
     );
   })
@@ -37,7 +37,31 @@ storiesOf('Objective', module)
 
     return (
       <div className="objective2">
-        <Objective data={objective} onChange={action('onChange')}/>
+        <Objective data={objective} onObjectiveChange={action('onObjectiveChange')}/>
       </div>
     );
-  });
+  })
+  .add('editable objective', () => {
+    var objective = {
+      id: 1,
+      objective: 'objective 1',
+      tags: ['core'],
+
+      keyResults: [{
+        id: 5,
+        completeness: 45,
+        keyResult: 'first key result',
+        tags: ['mandatory']
+      }, {
+        id: 6,
+        completeness: 15,
+        keyResult: 'second key result'
+      }]
+    };
+
+    return (
+      <div className="objective1">
+        <Objective data={objective} edit={true} onObjectiveChange={action('onObjectiveChange')}/>
+      </div>
+    );
+  })
