@@ -69,9 +69,6 @@ export default React.createClass({
   // Tag changes
   onTagsSave: function(object) {
     if(object.type == 'keyResult') {
-      console.log("+++++++++++++++++++++++++++++++++++++++++++ onTagsSave :: keyResult")
-      console.log(object)
-
       object.object.tags = object.tags;
     } else if(object.type == 'objective') {
 
@@ -84,8 +81,7 @@ export default React.createClass({
 
   // Close modal
   closeModal: function(e) {
-    this.state.modalIsOpen = false;
-    this.setState(this.state);
+    this.setState({modalIsOpen:false});
   },
 
   // Render the okr component

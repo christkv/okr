@@ -8,7 +8,19 @@
   height:32px;
 }
 
+.comment_form .modal-content h4 {
+  text-align: center;
+}
+
+.comment .reply textarea {
+  width: 99%;
+}
+
 .comment .comment_reply_box textarea {
+  width: 99%;
+}
+
+.comment .comment_comment_box textarea {
   width: 99%;
 }
 
@@ -24,7 +36,7 @@
 
 .comment .comment_edit_box_buttons {
   background-color: lightgray;
-  padding-bottom: 5px;  
+  padding-bottom: 5px;
 }
 
 .comment .comment_reply_box {

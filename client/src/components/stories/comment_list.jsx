@@ -52,3 +52,26 @@ storiesOf('Comments List', module)
       </div>
     );
   })
+  .add('no comment', () => {
+    var comments = {
+      id: 5,
+      comments: []
+    };
+
+    var user = {
+      username: 'christkv',
+      name: 'Christian Kvalheim',
+      avatar: 'https://chinesefontdesign.com/wp-content/uploads/2013/09/s.gif'
+    }
+
+    return (
+      <div className="comments">
+        <List
+          data={comments}
+          user={user}
+          onReply={action('onReply')}
+          onEdit={action('onEdit')}
+        />
+      </div>
+    );
+  })

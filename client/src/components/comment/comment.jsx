@@ -23,10 +23,12 @@ export default React.createClass({
       reply: false,
       edit: false,
       replyText: '',
-      comment: this.props.data.message
+      comment: this.props.data.message || ''
     }
   },
 
+  //
+  // Manage State buttons
   onReplyClicked: function() {
     // Render the buttons
     this.setState({reply:true});
@@ -38,25 +40,41 @@ export default React.createClass({
     this.setState({edit:true, reply:false});
   },
 
+  onDeleteClicked: function(e) {
+    if(this.props.onDelete) {
+      this.props.onDelete({ type: 'comment', id: this.props.data.id });
+    }
+  },
+
+  onResolvedClicked: function(e) {
+    if(this.props.onResolved) this.props.onResolved(this.props.data.id);
+  },
+
+  //
+  // Edit of comment changed
   onEditChange: function(e) {
     this.setState({comment: e.target.value});
   },
 
+  //
+  // Reply text field changed
   onReplyChange: function(e) {
     this.setState({replyText: e.target.value});
   },
 
+  //
+  // Reply text field received focus
   onEditFocus: function(e) {
     this.setState({edit:true, reply:false});
   },
 
+  //
+  // Comment edited and saved
   onEditSave: function(e) {
     // Get the edited value
     var message = ReactDOM.findDOMNode(this.refs.editTextarea).value;
-
     // Set the state of the component
     this.setState({edit:false, reply:false});
-
     // Fire the onEdit handler
     if(this.props.onEdit) {
       this.props.onEdit({
@@ -66,6 +84,8 @@ export default React.createClass({
     }
   },
 
+  //
+  // Reply added to the comment
   onReply: function() {
     // Disable the button bar
     this.setState({reply:false, replyText: ''});
@@ -81,16 +101,32 @@ export default React.createClass({
     ReactDOM.findDOMNode(this.refs.replyTextarea).value = '';
   },
 
+  //
+  // Reply changed by the user
+  onDeleteReply: function(id) {
+    if(this.props.onDelete) {
+      this.props.onDelete({ type: 'reply', comment_id: this.props.data.id, id: id });
+    }
+  },
+
+  onEditReply: function(e) {
+    if(this.props.onReplyEdit) this.props.onReplyEdit({
+      comment_id: this.props.data.id, id: e.id, reply: e.reply
+    });
+  },
+
+  //
+  // Reply cancel button clicked
+  onReplyCancel: function(e) {
+    this.setState({reply:false, replyText: ''});
+  },
+
   onFocus: function(e) {
-    this.setState({reply:true});
+    this.setState({reply:true, edit:false});
   },
 
   onBlur: function(e) {
     this.setState({reply:false});
-  },
-
-  onReplyCancel: function(e) {
-    this.setState({reply:false, replyText: ''});
   },
 
   onEditBlur: function() {
@@ -115,8 +151,14 @@ export default React.createClass({
     var replies = comment.replies || [];
 
     // Render all the replies
-    var replyObjects = replies.map(function(reply) {
-      return ( <Reply key={reply.id} data={reply}/> )
+    var replyObjects = replies.map((reply) => {
+      return ( <Reply
+        user={user}
+        key={reply.id}
+        data={reply}
+        onDelete={this.onDeleteReply}
+        onEdit={this.onEditReply}
+      /> )
     });
 
     // Either show editor or render the text
@@ -125,9 +167,11 @@ export default React.createClass({
       : ( <div dangerouslySetInnerHTML={renderMarkdown(this.state.comment)} /> );
 
     // Edit button
-    var editButton = currentUser
-      ? ( <a href="#" onClick={this.onEditClicked}>Edit</a> )
-      : ( <div/> );
+    var editButton = currentUser ? ( <a href="#" onClick={this.onEditClicked}>Edit</a> ) : ( <div/> );
+    // Delete button
+    var deleteButton = currentUser ? ( <a href="#" onClick={this.onDeleteClicked}>Delete</a> ) : ( <div/> );
+    // Resolve button
+    var resolveButton = currentUser ? ( <a href="#" onClick={this.onResolvedClicked}>Resolve</a> ) : ( <div/> );
 
     // Render the reply buttons
     var replyButtons = this.state.reply
@@ -188,6 +232,8 @@ export default React.createClass({
                 <ButtonToolbar>
                   <a href="#" onClick={this.onReplyClicked}>Reply</a>
                   {editButton}
+                  {deleteButton}
+                  {resolveButton}
                 </ButtonToolbar>
               </div>
             </div>
@@ -202,7 +248,12 @@ export default React.createClass({
                   <Image src={user.avatar} rounded className='avatar_min'/>
                 </div>
                 <div className='col-xs-11'>
-                  <Textarea ref='replyTextarea' onFocus={this.onFocus} onChange={this.onReplyChange} value={this.state.replyText} minRows={1} placeholder='Add a comment' />
+                  <Textarea ref='replyTextarea'
+                    onFocus={this.onFocus}
+                    onChange={this.onReplyChange}
+                    value={this.state.replyText}
+                    minRows={1}
+                    placeholder='Add a reply' />
                 </div>
               </div>
             </div>

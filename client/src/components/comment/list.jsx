@@ -1,5 +1,6 @@
 import React from 'react';
 import co from 'co';
+import Form from './form';
 import Comment from './comment';
 
 export default React.createClass({
@@ -28,18 +29,18 @@ export default React.createClass({
       return (
         <div className='comment' key={x.id}>
           <Comment
-            data={x}
-            user={user}
+            data={x} user={user}
             onReply={this.onReply}
             onEdit={this.onEdit}
+            onDelete={this.onDelete}
+            onResolved={this.onResolved}
             />
           <hr/>
         </div>
       );
     });
 
-    return ( <div>
-        { commentObjects }
-      </div> );
+    // Return the comments
+    return ( <div> { commentObjects } </div> );
   }
 });
