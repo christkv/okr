@@ -122,7 +122,12 @@ export default React.createClass({
   },
 
   onFocus: function(e) {
-    this.setState({reply:true, edit:false});
+    var state = {reply:true, edit:false};
+    // Reset state back to property (it will wipe out the text but it should have)
+    // been updated via the parent component setting the property
+    if(this.state.edit) state.comment = this.props.data.message || '';
+    // Update the state
+    this.setState(state);
   },
 
   onBlur: function(e) {
@@ -130,7 +135,7 @@ export default React.createClass({
   },
 
   onEditBlur: function() {
-    this.setState({reply:false, edit:false});
+    this.setState({reply:false, edit:false, comment: this.props.data.message || ''});
   },
 
   onClick: function(e) {
