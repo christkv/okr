@@ -249,10 +249,10 @@ export default React.createClass({
             </div>
             <div className='row comment_reply_box'>
               <div className='inner'>
-                <div className='col-md-1'>
+                <div className='col-md-2'>
                   <Image src={user.avatar} rounded className='avatar_min'/>
                 </div>
-                <div className='col-md-11'>
+                <div className='col-md-10'>
                   <Textarea ref='replyTextarea'
                     onFocus={this.onFocus}
                     onChange={this.onReplyChange}

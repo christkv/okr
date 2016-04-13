@@ -62,7 +62,7 @@ export default React.createClass({
     var editButtons = this.state.edit
       ? (
         <div className='row comment_edit_box_buttons'>
-          <div className='col-xs-12'>
+          <div className='col-md-12'>
             <ButtonToolbar>
               <Button bsStyle="primary" bsSize="small" onClick={this.onEditSave}>Save</Button>
               <Button bsStyle="default" bsSize="small" onClick={this.onEditCancel}>Cancel</Button>
@@ -80,23 +80,23 @@ export default React.createClass({
     // Render the reply
     return (
         <div className='row reply'>
-          <div className='col-xs-1'>
+          <div className='col-md-2'>
             <Image src={reply.avatar} rounded className='avatar_min'/>
           </div>
-          <div className='col-xs-11'>
+          <div className='col-md-10'>
             <div className='row'>
-              <div className='col-xs-12 from'>
+              <div className='col-md-12 from'>
                 {reply.from}
               </div>
             </div>
             <div className='row'>
-              <div className='col-xs-12'>
+              <div className='col-md-12'>
                 {message}
               </div>
             </div>
             {editButtons}
             <div className='row'>
-              <div className='col-xs-12 reply_date'>
+              <div className='col-md-12 reply_date'>
                 {formatDate(reply.created)}
                 {editButton}
                 {deleteButton}
