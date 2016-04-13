@@ -1,3 +1,60 @@
+/* Main Container */
+.mainContainer .search-bar-input {
+  width: 85%;
+  margin-top: 25px;
+  margin-left: 5px;
+}
+
+.mainContainer .left_menu_bar {
+  margin-top: 10px;
+}
+
+.mainContainer .user-okr {
+  margin-left: 5px;
+  width: 95%;
+}
+
+.ReactModal__Overlay {
+  -webkit-perspective: 600;
+  perspective: 600;
+  opacity: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.ReactModal__Overlay--after-open {
+  opacity: 1;
+  transition: opacity 150ms ease-out;
+}
+
+.ReactModal__Content {
+  -webkit-transform: scale(0.5) rotateX(-30deg);
+  transform: scale(0.5) rotateX(-30deg);
+}
+
+.ReactModal__Content--after-open {
+  -webkit-transform: scale(1) rotateX(0deg);
+  transform: scale(1) rotateX(0deg);
+  transition: all 150ms ease-in;
+}
+
+.ReactModal__Overlay--before-close {
+  opacity: 0;
+}
+
+.ReactModal__Content--before-close {
+  -webkit-transform: scale(0.5) rotateX(30deg);
+  transform: scale(0.5) rotateX(30deg);
+  transition: all 150ms ease-in;
+}
+
+.ReactModal__Content.modal-dialog {
+  border: none;
+  background-color: transparent;
+}
+
+/* Rest */
 .avatar {
   width:48px;
   height:48px;
@@ -6,6 +63,66 @@
 .avatar_min {
   width:32px;
   height:32px;
+}
+
+.avatar_max {
+  width:64px;
+  height:64px;
+}
+
+.left_menu_bar {
+  margin-left:10px;
+}
+
+.left_menu_bar hr {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.left_menu_bar .team h4{
+  padding-left: 0px;
+  margin-bottom: 0px
+}
+
+.left_menu_bar .team h5{
+  padding-left: 0px;
+  margin-bottom: 0px
+}
+
+.left_menu_bar .manager {
+  margin-left: 0px;
+}
+
+.left_menu_bar .manager h5 {
+  margin-top: 25px;
+  margin-bottom: 10px;
+}
+
+.left_menu_bar .reports .report {
+  margin-left: 0px;
+  margin-bottom: 5px
+}
+
+.left_menu_bar h4 {
+  padding-left: 10px;
+}
+
+.left_menu_bar h5 {
+  padding-left: 10px;
+  color: darkgray;
+}
+
+.admin {
+  margin: 10px 10px 10px 10px;
+}
+
+.admin .search-bar-input {
+  width: 85%;
+  margin: 0px 10px 0px 10px;
+}
+
+.admin form {
+  padding: 10px 10px 10px 10px;
 }
 
 .comment_form .modal-content h4 {

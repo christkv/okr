@@ -8,21 +8,22 @@ import AddTag from './okr/add_tag';
 
 export default React.createClass({
   getInitialState: function() {
-    return Store.OKR().getState();
+    return this.props.store.OKR().getState();
   },
 
   // Component became visible
   componentDidMount: function() {
     var self = this;
+    console.log(this.props.store.OKR().getState())
 
     // Load the data
     co(function*() {
       // Load the user
-      var user = yield Store.User().load();
+      var user = yield self.props.store.User().load();
       // Load the OKR for the proposed user viewed by the current user
-      yield Store.OKR().load(self.props.params.userId, user);
+      yield self.props.store.OKR().load(self.props.params.userId, user);
       // Get the state
-      self.setState(Store.OKR().getState());
+      self.setState(self.props.store.OKR().getState());
     });
   },
 
@@ -32,8 +33,8 @@ export default React.createClass({
 
     // Fire edit button clicked
     co(function*() {
-      yield Store.OKR().dispatch({type: Store.OKR_EDIT_BUTTON_CLICKED, value: index});
-      self.setState(Store.OKR().getState());
+      yield self.props.store.OKR().dispatch({type: Store.OKR_EDIT_BUTTON_CLICKED, value: index});
+      self.setState(self.props.store.OKR().getState());
     });
   },
 
@@ -43,25 +44,25 @@ export default React.createClass({
 
     co(function*() {
       if(e.type == 'keyResultChange') {
-        yield Store.OKR().dispatch({type: Store.OKR_CHANGED, value: e});
-        self.setState(Store.OKR().getState());
+        yield self.props.store.OKR().dispatch({type: Store.OKR_CHANGED, value: e});
+        self.setState(self.props.store.OKR().getState());
       } else if(e.type == 'addKeyResultTag') {
         // Load the tags
-        yield Store.Tags().load();
+        yield self.props.store.Tags().load();
         // Set the modal controller to visible
         self.state.modalIsOpen = true;
         // Set the modal payload
         self.state.modalData = {
           id: e.keyResultId, type: 'keyResult', object: e.keyResult,
           text: e.keyResult.keyResult, tags: e.keyResult.tags,
-          suggestions: Store.Tags().tags()
+          suggestions: self.props.store.Tags().tags()
         }
 
         // Update the state
         self.setState(self.state);
       } else if(e.type == 'ratingChanged') {
-        yield Store.OKR().dispatch({type: Store.OKR_RATING_CHANGED, value: e});
-        self.setState(Store.OKR().getState());
+        yield self.props.store.OKR().dispatch({type: Store.OKR_RATING_CHANGED, value: e});
+        self.setState(self.props.store.OKR().getState());
       }
     });
   },
@@ -91,14 +92,14 @@ export default React.createClass({
         <Objective key={objective.id}
             data={objective}
             edit={this.state.edit}
-            rate={Store.OKR().canRate()}
+            rate={this.props.store.OKR().canRate()}
             tags={objective.tags}
             onObjectiveChange={this.onObjectiveChange}
         />
       )
     });
 
-    var editButton = Store.OKR().canEdit()
+    var editButton = this.props.store.OKR().canEdit()
       ? ( <ToogleButton values={["edit", "save"]} onClick={this.editButtonClicked}/> )
       : ( <span/> );
 

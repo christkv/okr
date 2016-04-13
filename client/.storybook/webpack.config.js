@@ -1,6 +1,10 @@
 const path = require('path');
 
 module.exports = {
+  entry: [
+    'babel-polyfill',
+    './src/components/stories/index.js'
+  ],
   module: {
     loaders: [
       {

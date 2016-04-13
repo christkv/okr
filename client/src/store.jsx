@@ -206,24 +206,23 @@ class TagsStore {
   }
 }
 
-var user = new UserStore();
-var okr = new OKRState();
-var tags = new TagsStore();
-
 export default class Store {
   constructor() {
+    this.okr = new OKRState();
+    this.user = new UserStore();
+    this.tags = new TagsStore();
   }
 
-  static OKR() {
-    return okr;
+  OKR() {
+    return this.okr;
   }
 
-  static User() {
-    return user;
+  User() {
+    return this.user;
   }
 
-  static Tags() {
-    return tags;
+  Tags() {
+    return this.tags;
   }
 }
 
