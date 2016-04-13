@@ -45,6 +45,13 @@ export default React.createClass({
     }
   },
 
+  // Add a new key result
+  onAddKeyResult: function(e) {
+    if(this.props.onChange) {
+      this.props.onChange('remove', null, this.props.data);
+    }
+  },
+
   // Render the component
   render: function() {
     // Render the key results
@@ -102,6 +109,15 @@ export default React.createClass({
           </OverlayTrigger> )
       : (<span/>);
 
+    // Create a add keyResult button
+    var addKeyResult = this.props.edit
+      ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Add Key Result">Add a new key result.</Popover>}>
+            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={this.onAddKeyResult}>
+              Add
+            </button>
+          </OverlayTrigger> )
+      : (<span/>);
+
     // Render the template for an objective
     return (
       <div>
@@ -115,6 +131,7 @@ export default React.createClass({
               </td>
               <td colSpan="2">{objective}</td>
               <td><ProgressBar now={okrCalculation} label="%(percent)s%" /></td>
+              <td>{addKeyResult}</td>
             </tr>
             {keyResults}
           </tbody>

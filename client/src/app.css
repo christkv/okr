@@ -1,17 +1,67 @@
+/* Navbar */
+/* navbar */
+.navbar-default {
+  background-color: lightblue;
+  border-color: lightblue;
+}
+/* title */
+.navbar-default .navbar-brand {
+  color: white;
+  font-size: 2em;
+}
+/* link */
+.navbar-default .navbar-nav > li > a {
+  color: white;
+  font-size: 1.5em;
+}
+
 /* Main Container */
+.mainContainer .search-bar-wrapper {
+  /*background-color: lightgray;*/
+  display: table;
+  text-align: center;
+  width: 98%;
+  padding-top: 25px;
+  padding-bottom: 10px;
+  /*border-radius: 10px;*/
+}
+
 .mainContainer .search-bar-input {
-  width: 85%;
+  width: 95%;
+  border: 1px solid lightblue;
+}
+
+.mainContainer .comments_list {
   margin-top: 25px;
-  margin-left: 5px;
+  margin-right: 25px;
+}
+
+.mainContainer .top_menu_bar {
+  margin-bottom: 0px;
 }
 
 .mainContainer .left_menu_bar {
   margin-top: 10px;
+  border: 1px solid lightgray;
+  height: 1000px;
+  padding: 10px 20px 20px 20px;
+}
+
+.left_menu_bar .header h5 {
+  background-color: lightblue;
+  color: white;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 .mainContainer .user-okr {
   margin-left: 5px;
-  width: 95%;
+  width: 100%;
+}
+
+.mainContainer .user-okr .toggle_button {
+  margin-top: 15px;
+  margin-bottom: 5px;
 }
 
 .ReactModal__Overlay {

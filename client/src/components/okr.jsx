@@ -105,7 +105,6 @@ export default React.createClass({
 
     return (
       <div id="user-okr" className="user-okr">
-        <h1>OKR</h1>
         {editButton}
         {objectives}
         <AddTag

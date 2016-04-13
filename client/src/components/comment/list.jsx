@@ -72,7 +72,7 @@ export default React.createClass({
     });
 
     // Return the comments
-    return ( <div>
+    return ( <div className='comments_list'>
           { commentObjects }
         <DeleteDialog
           isOpen={this.state.delete}

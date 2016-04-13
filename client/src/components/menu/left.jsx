@@ -14,13 +14,12 @@ export default React.createClass({
     // Do we have a manager
     var manager = this.props.manager
       ? ( <Row>
-          <div className='manager'>
+          <div className='manager header'>
             <h5>Manager</h5>
-            <hr/>
-            <Col xs={1}>
+            <Col md={2}>
               <Image circle src={this.props.manager.avatar} className='avatar_min'/>
             </Col>
-            <Col xs={11}>
+            <Col md={10}>
               {this.props.manager.name}
             </Col>
           </div>
@@ -31,11 +30,11 @@ export default React.createClass({
     var reports = this.props.reports
       ? this.props.reports.map(function(report) {
         return (
-          <Row className='report'>
-            <Col xs={1}>
+          <Row className='report header'>
+            <Col md={2}>
               <Image circle src={report.avatar} className='avatar_min'/>
             </Col>
-            <Col xs={11}>
+            <Col md={10}>
               {report.name}
             </Col>
           </Row>
@@ -49,9 +48,8 @@ export default React.createClass({
     // Reports view
     var report = this.props.reports
       ? ( <Row>
-            <div className='reports'>
+            <div className='reports header'>
               <h5>{label}</h5>
-              <hr/>
               {reports}
             </div>
           </Row> )
@@ -59,12 +57,12 @@ export default React.createClass({
 
     var user = this.props.user
       ? ( <Row>
-          <Col xs={1}>
+          <Col md={3}>
             <Image circle src={this.props.user.avatar} className='avatar_max'/>
           </Col>
-          <Col xs={11}>
+          <Col md={9}>
             <Row>
-              <Col xs={12}>
+              <Col md={12}>
                 <h4>{this.props.user.name}</h4>
                 <h5>{this.props.user.title}</h5>
               </Col>
@@ -74,13 +72,13 @@ export default React.createClass({
       : ( <span/> );
 
     var team = this.props.team
-      ? ( <Row>
-          <Col xs={1}>
+      ? ( <Row className='header'>
+          <Col md={2}>
             <Image circle src={this.props.team.avatar} className='avatar_max'/>
           </Col>
-          <Col xs={11}>
+          <Col md={10}>
             <Row>
-              <Col xs={12}>
+              <Col md={12}>
                 <h5>Team</h5>
                 <h4>{this.props.team.title}</h4>
               </Col>

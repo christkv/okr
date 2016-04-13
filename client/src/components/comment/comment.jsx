@@ -182,9 +182,9 @@ export default React.createClass({
     var replyButtons = this.state.reply
       ? (
         <div className='row comment_reply_box_buttons'>
-          <div className='col-xs-1'>
+          <div className='col-md-1'>
           </div>
-          <div className='col-xs-11'>
+          <div className='col-md-11'>
             <ButtonToolbar>
               <Button bsStyle="primary" bsSize="small" onClick={this.onReply}>Reply</Button>
               <Button bsStyle="default" bsSize="small" onClick={this.onReplyCancel}>Cancel</Button>
@@ -198,7 +198,7 @@ export default React.createClass({
     var editButtons = this.state.edit
       ? (
         <div className='row comment_edit_box_buttons'>
-          <div className='col-xs-12'>
+          <div className='col-md-12'>
             <ButtonToolbar>
               <Button bsStyle="primary" bsSize="small" onClick={this.onEditSave}>Save</Button>
               <Button bsStyle="default" bsSize="small" onClick={this.onEditBlur}>Cancel</Button>
@@ -211,29 +211,29 @@ export default React.createClass({
     // Return the comment component
     return (
         <div className='row comment' onClick={this.onClick}>
-          <div className='col-xs-1'>
+          <div className='col-md-2'>
             <Image src={comment.avatar} rounded className='avatar'/>
           </div>
-          <div className='col-xs-11'>
+          <div className='col-md-10'>
             <div className='row comment_row'>
-              <div className='col-xs-4 from'>
+              <div className='col-md-4 from'>
                 {comment.from}
               </div>
-              <div className='col-xs-4 reply_date'>
+              <div className='col-md-4 reply_date'>
                 {formatDate(comment.created)}
               </div>
-              <div className='col-xs-4'>
+              <div className='col-md-4'>
                 {comment.from}
               </div>
             </div>
             <div className='row comment_row'>
-              <div className='col-xs-12'>
+              <div className='col-md-12'>
                 {message}
               </div>
             </div>
             {editButtons}
             <div className='row comment_operations_row'>
-              <div className='col-xs-12'>
+              <div className='col-md-12'>
                 <ButtonToolbar>
                   <a href="#" onClick={this.onReplyClicked}>Reply</a>
                   {editButton}
@@ -243,16 +243,16 @@ export default React.createClass({
               </div>
             </div>
             <div className='row'>
-              <div className='col-xs-12'>
+              <div className='col-md-12'>
                 {replyObjects}
               </div>
             </div>
             <div className='row comment_reply_box'>
               <div className='inner'>
-                <div className='col-xs-1'>
+                <div className='col-md-1'>
                   <Image src={user.avatar} rounded className='avatar_min'/>
                 </div>
-                <div className='col-xs-11'>
+                <div className='col-md-11'>
                   <Textarea ref='replyTextarea'
                     onFocus={this.onFocus}
                     onChange={this.onReplyChange}

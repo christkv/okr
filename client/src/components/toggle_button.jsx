@@ -16,7 +16,7 @@ export default React.createClass({
 
   render: function() {
     return (
-      <button className='btn btn-default' onClick={this.onClick}>{this.state.values[this.state.index]}</button>
+      <button className='toggle_button btn btn-primary btn-xs' onClick={this.onClick}>{this.state.values[this.state.index]}</button>
     );
   }
 })

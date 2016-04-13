@@ -15,6 +15,12 @@ export default React.createClass({
     }
   },
 
+  onRemoveKeyResult: function(e) {
+    if(this.props.onChange) {
+      this.props.onChange('remove', null, this.props.data);
+    }
+  },
+
   onRatingChange: function(value) {
     if(this.props.onChange) {
       this.props.onChange('ratingChanged', parseInt(event.target.value, 10), this.props.data);
@@ -59,6 +65,15 @@ export default React.createClass({
           </OverlayTrigger> )
       : (<span/>);
 
+    // Remote a add keyResult button
+    var removeKeyResult = this.props.edit
+      ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Remove Key Result">Remove a key result.</Popover>}>
+            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={this.onRemoveKeyResult}>
+              Delete
+            </button>
+          </OverlayTrigger> )
+      : (<span/>);
+
     // Handle progress bar
     var progressBar = !this.props.rate
       ? ( <ProgressBar
@@ -88,6 +103,7 @@ export default React.createClass({
         <td width='25%'>
           {progressBar}
         </td>
+        <td>{removeKeyResult}</td>
       </tr>
     );
   }
