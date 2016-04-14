@@ -88,7 +88,14 @@ var keyResultRatingChanged = function(state, objectiveId, keyResultId, value) {
 
 class OKRState {
   constructor() {
-    this.state = {objectives: [], edit:false, modalData: {}, modalIsOpen: false};
+    this.state = {
+      objectives: [],
+      edit:false,
+      addTagData: {},
+      addTagIsOpen: false,
+      addObjectiveIsOpen: false,
+      addKeyResultIsOpen: false
+    };
   }
 
   getState() {

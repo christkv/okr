@@ -1,10 +1,11 @@
 import React from 'react';
-import {Button, ProgressBar} from 'react-bootstrap';
+import {Button, ProgressBar, OverlayTrigger, Popover} from 'react-bootstrap';
 import ToogleButton from './toggle_button';
 import Store from '../store';
 import Objective from './okr/objective';
 import co from 'co';
 import AddTag from './okr/add_tag';
+import AddObjective from './okr/add_objective';
 
 export default React.createClass({
   getInitialState: function() {
@@ -54,9 +55,9 @@ export default React.createClass({
         // Load the tags
         yield self.props.store.Tags().load();
         // Set the modal controller to visible
-        self.state.modalIsOpen = true;
+        self.state.addTagIsOpen = true;
         // Set the modal payload
-        self.state.modalData = {
+        self.state.addTagData = {
           id: e.keyResultId, type: 'keyResult', object: e.keyResult,
           text: e.keyResult.keyResult, tags: e.keyResult.tags,
           suggestions: self.props.store.Tags().tags()
@@ -71,6 +72,19 @@ export default React.createClass({
     });
   },
 
+  // On Add objective
+  onAddObjective: function() {
+    this.setState({
+      addTagIsOpen:false, addObjectiveIsOpen: true, addKeyResultIsOpen:false
+    });
+  },
+
+  closeObjective: function() {
+    this.setState({
+      addTagIsOpen:false, addObjectiveIsOpen: false, addKeyResultIsOpen:false
+    });
+  },
+
   // Tag changes
   onTagsSave: function(object) {
     if(object.type == 'keyResult') {
@@ -80,13 +94,13 @@ export default React.createClass({
     }
 
     this.setState({
-      modalIsOpen:false
+      addTagIsOpen:false, addObjectiveIsOpen: false, addKeyResultIsOpen:false
     });
   },
 
   // Close modal
-  closeModal: function(e) {
-    this.setState({modalIsOpen:false});
+  closeAddTag: function(e) {
+    this.setState({addTagIsOpen:false});
   },
 
   // Render the okr component
@@ -107,6 +121,15 @@ export default React.createClass({
       ? ( <ToogleButton values={["edit", "save"]} onClick={this.editButtonClicked}/> )
       : ( <span/> );
 
+    // Create a add keyResult button
+    var addObjective = this.state.edit
+      ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Add New Objective">Add a new objective.</Popover>}>
+            <button className="toggle_button btn btn-primary btn-xs" onClick={this.onAddObjective}>
+              Add
+            </button>
+          </OverlayTrigger> )
+      : (<span/>);
+
     var commentsButton = (
       <button className='toggle_button btn btn-primary btn-xs' onClick={this.commentsButtonClicked}>Comments</button>
     );
@@ -114,13 +137,19 @@ export default React.createClass({
     return (
       <div id="user-okr" className="user-okr">
         {editButton}
+        {addObjective}
         {commentsButton}
         {objectives}
         <AddTag
-          isOpen={this.state.modalIsOpen}
-          closeModal={this.closeModal}
+          isOpen={this.state.addTagIsOpen}
+          closeModal={this.closeAddTag}
           onSaveChanges={this.onTagsSave}
-          data={this.state.modalData}
+          data={this.state.addTagData}
+        />
+        <AddObjective
+          isOpen={this.state.addObjectiveIsOpen}
+          closeModal={this.closeObjective}
+          onSave={this.onObjectiveSave}
         />
       </div>
     );

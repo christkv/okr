@@ -65,7 +65,7 @@ storiesOf('Main Container', module)
       <div className="app">
         <MainContainer
           user={userObject}
-          store={store}
+          store={store}        
         />
       </div>
     );

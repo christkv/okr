@@ -8,5 +8,4 @@ import './search';
 import './admin';
 import './left_bar';
 import './okr_views';
-
-import './side_bar';
+import './okr_link';

@@ -16,12 +16,10 @@ export default React.createClass({
   },
 
   commentsButtonClicked: function() {
-    console.log("--------------------------------- commentsButtonClicked")
     this.setState({ sideBarOpen: true });
   },
 
   onSideBarCloseClicked: function() {
-    console.log("--------------------------------- onSideBarCloseClicked")
     this.setState({ sideBarOpen: false });
   },
 
@@ -63,7 +61,11 @@ export default React.createClass({
             </Col>
             <Col md={10}>
               <Row>
-                <SearchBar label='Search'/>
+                <SearchBar
+                  label='Search'
+                  disableButton={true}
+                  placeholder='Search for user or team'
+                />
               </Row>
               <Row>
                 <OKR

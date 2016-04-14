@@ -1,10 +1,11 @@
 import React from 'react';
 import {ProgressBar, Label, OverlayTrigger, Popover} from 'react-bootstrap';
 import KeyResult from './key_result';
+import AddKeyResult from './add_keyresult';
 
 export default React.createClass({
   getInitialState: function() {
-    return {keyResults: []};
+    return {keyResults: [], addKeyResultIsOpen: false};
   },
 
   // Key result changed
@@ -47,9 +48,14 @@ export default React.createClass({
 
   // Add a new key result
   onAddKeyResult: function(e) {
-    if(this.props.onChange) {
-      this.props.onChange('remove', null, this.props.data);
-    }
+    this.setState({addKeyResultIsOpen:true});
+  },
+
+  closeKeyResult: function() {
+    this.setState({addKeyResultIsOpen:false});
+  },
+
+  onKeyResultSave: function() {
   },
 
   // Render the component
@@ -118,6 +124,15 @@ export default React.createClass({
           </OverlayTrigger> )
       : (<span/>);
 
+    // Create a add keyResult button
+    var linkButton = this.props.edit
+      ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Link Objective">Link Objective.</Popover>}>
+            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={this.onLinkObjective}>
+              Link
+            </button>
+          </OverlayTrigger> )
+      : (<span/>);
+
     // Render the template for an objective
     return (
       <div>
@@ -131,11 +146,16 @@ export default React.createClass({
               </td>
               <td colSpan="2">{objective}</td>
               <td><ProgressBar now={okrCalculation} label="%(percent)s%" /></td>
-              <td>{addKeyResult}</td>
+              <td>{addKeyResult}<br/>{linkButton}</td>
             </tr>
             {keyResults}
           </tbody>
         </table>
+        <AddKeyResult
+          isOpen={this.state.addKeyResultIsOpen}
+          closeModal={this.closeKeyResult}
+          onSave={this.onKeyResultSave}
+        />
       </div>
     );
   }

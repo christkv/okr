@@ -29,25 +29,12 @@ export default React.createClass({
         resolve(suggestions);
       });
     }
-    // // Simulate AJAX request
-    // setTimeout(() => {
-    //   const suggestions = matches[Object.keys(matches).find((partial) => {
-    //     return searchTerm.match(new RegExp(partial), 'i');
-    //   })] || ['macbook', 'macbook air', 'macbook pro'];
-    //
-    //   resolve(suggestions.filter((suggestion) =>
-    //     suggestion.match(new RegExp('^' + searchTerm.replace(/\W\s/g, ''), 'i'))
-    //   ));
-    // }, 25);
   },
 
   onKeyUp: function(e) {
   },
 
   onSearch: function(searchTerm) {
-    console.log("------------------------------------- onSearch")
-    // if (!searchTerm) return;
-    // console.log(`Searching "${searchTerm}"`);
     if(this.props.onSearch) this.props.onSearch(searchTerm);
   },
 
@@ -62,6 +49,8 @@ export default React.createClass({
           onSearch={this.onSearch}
           onSubmit={this.onSearch}
           onKeyUp={this.onKeyUp}
+          disableButton={this.props.disableButton}
+          placeholder={this.props.placeholder}
           label={label}
         />
       </div>

@@ -74,6 +74,15 @@ export default React.createClass({
           </OverlayTrigger> )
       : (<span/>);
 
+    // Create a add keyResult button
+    var linkButton = this.props.edit
+      ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Link Objective">Link Objective.</Popover>}>
+            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={this.onLinkObjective}>
+              Link
+            </button>
+          </OverlayTrigger> )
+      : (<span/>);
+
     // Handle progress bar
     var progressBar = !this.props.rate
       ? ( <ProgressBar
@@ -103,7 +112,7 @@ export default React.createClass({
         <td width='25%'>
           {progressBar}
         </td>
-        <td>{removeKeyResult}</td>
+        <td>{linkButton}<br/>{removeKeyResult}</td>
       </tr>
     );
   }

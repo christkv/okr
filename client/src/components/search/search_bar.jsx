@@ -116,6 +116,15 @@ class SearchBar extends React.Component {
   render() {
     var label = this.props.label || 'Submit';
 
+    // Do we add an input box
+    var inputBox = !this.props.disableButton
+      ? ( <input
+           className="icon search-bar-submit"
+           type="submit"
+           value={label}
+           onClick={this.onSearch.bind(this)} /> )
+      : ( <span/> );
+
     /*eslint-disable quotes*/
     return (
       <div className="search-bar-wrapper">
@@ -144,11 +153,7 @@ class SearchBar extends React.Component {
                 className="icon search-bar-clear"
                 onClick={() => this.setState(this.initialState)}>
               </span> }
-          <input
-            className="icon search-bar-submit"
-            type="submit"
-            value={label}
-            onClick={this.onSearch.bind(this)} />
+            {inputBox}
         </div>
         { this.state.suggestions.length > 0 &&
           <Suggestions
