@@ -38,6 +38,10 @@ export default React.createClass({
     });
   },
 
+  commentsButtonClicked: function(index) {
+    if(this.props.commentsButtonClicked) this.props.commentsButtonClicked();
+  },
+
   // On objective Change
   onObjectiveChange: function(e) {
     var self = this;
@@ -103,9 +107,14 @@ export default React.createClass({
       ? ( <ToogleButton values={["edit", "save"]} onClick={this.editButtonClicked}/> )
       : ( <span/> );
 
+    var commentsButton = (
+      <button className='toggle_button btn btn-primary btn-xs' onClick={this.commentsButtonClicked}>Comments</button>
+    );
+
     return (
       <div id="user-okr" className="user-okr">
         {editButton}
+        {commentsButton}
         {objectives}
         <AddTag
           isOpen={this.state.modalIsOpen}

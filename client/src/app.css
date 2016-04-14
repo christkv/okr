@@ -1,18 +1,16 @@
 /* Navbar */
-/* navbar */
-.navbar-default {
+.mainContainer .top_menu_bar {
+  margin-bottom: 0px;
+}
+
+.mainContainer .top_menu_bar .navbar {
   background-color: lightblue;
   border-color: lightblue;
 }
-/* title */
-.navbar-default .navbar-brand {
-  color: white;
-  font-size: 2em;
-}
-/* link */
-.navbar-default .navbar-nav > li > a {
-  color: white;
-  font-size: 1.5em;
+
+.mainContainer .top_menu_bar  .container {
+  width: 100%;
+  background-color: lightblue;
 }
 
 /* Main Container */
@@ -20,24 +18,33 @@
   /*background-color: lightgray;*/
   display: table;
   text-align: center;
-  width: 98%;
+  width: 95%;
   padding-top: 25px;
   padding-bottom: 10px;
   /*border-radius: 10px;*/
 }
 
 .mainContainer .search-bar-input {
-  width: 95%;
+  width: 90%;
   border: 1px solid lightblue;
 }
 
-.mainContainer .comments_list {
-  margin-top: 25px;
-  margin-right: 25px;
+.mainContainer .user-okr {
+  padding-right: 35px;
 }
 
-.mainContainer .top_menu_bar {
-  margin-bottom: 0px;
+.sidebar {
+  background-color: white;
+  height: 100%;
+}
+
+.sidebar .sidebar_btn_toolbar {
+  background-color: lightblue;
+  margin-bottom: 20px;
+}
+
+.sidebar .sidebar_btn_toolbar .btn {
+  float:right;
 }
 
 .mainContainer .left_menu_bar {
