@@ -1,6 +1,7 @@
 import React from 'react';
 import {ProgressBar, Label, Popover, OverlayTrigger} from 'react-bootstrap';
 import NumberInput from 'react-number-input';
+import AceEditor from 'react-ace';
 
 export default React.createClass({
   onChange: function(e) {
@@ -28,9 +29,18 @@ export default React.createClass({
   },
 
   render: function() {
+    var name = `keyResult_${this.props.data.id}`;
+    console.log(name)
     // Handle if the component is in edit more or not
     var keyResult = this.props.edit
-      ? ( <textarea onChange={this.onChange} value={this.props.data.keyResult}/> )
+      ? (<AceEditor
+          mode="markdown"
+          theme="github"
+          height={150}
+          width="100%"
+          name={name}
+          editorProps={{$blockScrolling: true}}
+        /> )
       : ( <label>{this.props.data.keyResult}</label> );
 
     // Render any tags if they exist
@@ -108,7 +118,9 @@ export default React.createClass({
           &nbsp;
           {addTag}
         </td>
-        <td width='75%'>{keyResult}</td>
+        <td width='75%'>
+          {keyResult}
+        </td>
         <td width='25%'>
           {progressBar}
         </td>
