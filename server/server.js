@@ -1,72 +1,13 @@
 "use strict";
 
-var ShareDB = require('sharedb'),
-  express = require('express'),
+var express = require('express'),
   co = require('co'),
-  MongoClient = require('mongodb').MongoClient,
-  connectSharedMongo = require('sharedb-mongo');
+  CollaborationServer = require('./lib/collaboration_server'),
+  MongoClient = require('mongodb').MongoClient;
 
 // Settings
 var url = 'mongodb://localhost:27017/okr';
 var port = 8080;
-
-function socketIOHandler(io, socket, context) {
-  // Get the db and sharedb context
-  var db = context.db;
-  var backend = context.backend;
-  var connection = null;
-  // Last update
-  var text = null;
-
-  // Editing event
-  socket.on('editing', function(document) {
-    // console.log("------------- editing :: " + document.id)
-    // Get connection to document
-    var doc = connection.get('documents', "" + document.id);
-    // Keep latest update
-    text = document.text;
-    // Replace the whole document for now, shoud be optimized to use
-    // partial updates
-    doc.submitOp({
-      p: ['text'], oi: document.text
-    });
-  });
-
-  // Register event
-  socket.on('register', function(document) {
-    // console.log("------------- register :: " + document.id)
-    // Unpack the document
-    var id = document.id;
-
-    // Get a connection
-    connection = backend.connect();
-    // Get connection to document
-    var doc = connection.get('documents', "" + id);
-    // The doc
-    doc.on('error', function(e) {
-      // console.log(e)
-
-      // Get a new document and subscribe
-      doc = connection.get('documents', "" + id);
-      doc.subscribe(function(e) {
-        // console.log("------------------ subscribe")
-      });
-
-      // Deal with the ops
-      doc.on('op', function(op) {
-        // console.log("------------------ op")
-        // console.log(doc.data)
-        if(doc.data.text != text) {
-          // console.log("------------------ op sent")
-          socket.emit('editing', {id: id, text: doc.data.text});
-        }
-      })
-    });
-
-    // Attempt to fetch the doc
-    doc.create({text:''});
-  });
-}
 
 // Function start html express
 function boot(port, context) {
@@ -90,7 +31,7 @@ function boot(port, context) {
 
       // Add connect handler for socket.io
       io.on('connection', function (socket) {
-        socketIOHandler(io, socket, context);
+        context.collaborationServer.handleSocket(socket);
       });
     }).catch(rej);
   });
@@ -103,9 +44,9 @@ function connect(url, options) {
       // Get the connection
       var db = yield MongoClient.connect(url, options);
       // Create instance of shared db
-      var backend = ShareDB({db: require('sharedb-mongo')(url)});
+      var server = yield new CollaborationServer(url).connect();
       // Resolve with the values
-      res({db: db, backend: backend});
+      res({db: db, collaborationServer: server});
     }).catch(rej);
   });
 }
@@ -116,6 +57,8 @@ function connect(url, options) {
 co(function*() {
   // Connect sharedb and mongodb
   var context = yield connect(url, {});
+  // Drop the db
+  yield context.db.dropDatabase();
   // Boot server
   var serverContext = yield boot(port, context);
 }).catch(function(e) {
