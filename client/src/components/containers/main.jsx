@@ -6,13 +6,30 @@ import SearchBar from '../search';
 import OKR from '../okr';
 import List from '../comment/list';
 import {default as SideBar} from 'react-sidebar';
+import co from 'co';
 
 export default React.createClass({
   getInitialState: function() {
-    return { sideBarOpen: false };
+    return {
+      sideBarOpen: false,
+      comments: [],
+      user: {},
+      manager: {}
+    };
   },
 
   componentDidMount: function() {
+    var self = this;
+
+    co(function*() {
+      // Get the navigated to user
+      var userId = self.props.params.userId;
+      console.log("--------- load the user :: " + userId)
+      // Load the navigated to user
+      var user = yield self.store.User().load(userId);
+
+
+    });
   },
 
   commentsButtonClicked: function() {
@@ -34,8 +51,8 @@ export default React.createClass({
           </ButtonToolbar>
         </div>
         <List
-          data={this.props.user.comments}
-          user={this.props.user.user}
+          data={this.state.comments}
+          user={this.state.user}
         />
       </div>
     );
@@ -50,13 +67,13 @@ export default React.createClass({
       >
         <div className='mainContainer'>
           <TopMenu
-            user={this.props.user.user}
+            user={this.state.user}
           />
           <Row>
             <Col md={2}>
               <LeftMenu
-                user={this.props.user.user}
-                manager={this.props.user.manager}
+                user={this.state.user}
+                manager={this.state.manager}
               />
             </Col>
             <Col md={10}>

@@ -1,10 +1,10 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-import App from './components/app';
+import Dev from './components/developer';
 // import './app.css'
 console.log("!!!!!!!!!!!! START ");
 // Render the application
 ReactDOM.render(
-  <App />,
+  <Dev />,
   document.getElementById('app')
 );

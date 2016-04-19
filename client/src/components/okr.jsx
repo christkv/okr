@@ -21,6 +21,8 @@ export default React.createClass({
     co(function*() {
       // Load the user
       var user = yield self.props.store.User().load();
+      console.log(user)
+      console.log(self.props)
       // Load the OKR for the proposed user viewed by the current user
       yield self.props.store.OKR().load(self.props.params.userId, user);
       // Get the state

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Router, Route, Link, browserHistory } from 'react-router';
-import OKR from './okr';
+// import OKR from './okr';
 
 var DataRow = React.createClass({
   getInitialState: function() {
@@ -120,11 +120,14 @@ export default React.createClass({
   },
   render: function() {
     return (
-      <Router history={browserHistory}>
-        <Route path="/" component={App}></Route>
-        <Route path="about" component={About}/>
-        <Route path="/user/:userId" component={OKR}/>
-      </Router>
-    );
+      <div> HELLO WORLD </div>
+    )
+    // <Route path="/user/:userId" component={OKR}/>
+    // return (
+    //   <Router history={browserHistory}>
+    //     <Route path="/" component={App}></Route>
+    //     <Route path="about" component={About}/>
+    //   </Router>
+    // );
   }
 });

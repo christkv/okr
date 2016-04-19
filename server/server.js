@@ -3,11 +3,8 @@
 var express = require('express'),
   co = require('co'),
   CollaborationServer = require('./lib/collaboration_server'),
-  MongoClient = require('mongodb').MongoClient;
-
-// Settings
-var url = 'mongodb://localhost:27017/okr';
-var port = 8080;
+  MongoClient = require('mongodb').MongoClient,
+  BrowserMongoDBServer = require('./lib/browser_mongodb_server');
 
 // Function start html express
 function boot(port, context) {
@@ -29,10 +26,16 @@ function boot(port, context) {
         res({app: app, server: server, io: io});
       });
 
+      // Attach the mongodb server
+      yield context.browserMongoDBServer.connect(server);
+
       // Add connect handler for socket.io
       io.on('connection', function (socket) {
+        // Handle connection for collaborationServer
         context.collaborationServer.handleSocket(socket);
       });
+
+      res();
     }).catch(rej);
   });
 }
@@ -45,22 +48,54 @@ function connect(url, options) {
       var db = yield MongoClient.connect(url, options);
       // Create instance of shared db
       var server = yield new CollaborationServer(url).connect();
+      // Create a new instance of BrowserMongoDBServer
+      var browserMongoDBServer = new BrowserMongoDBServer(db);
       // Resolve with the values
-      res({db: db, collaborationServer: server});
+      res({db: db, collaborationServer: server, browserMongoDBServer: browserMongoDBServer});
     }).catch(rej);
   });
 }
 
-/*
- * Set up the context
- */
-co(function*() {
-  // Connect sharedb and mongodb
-  var context = yield connect(url, {});
-  // Drop the db
-  yield context.db.dropDatabase();
-  // Boot server
-  var serverContext = yield boot(port, context);
-}).catch(function(e) {
-  console.log(e.stack);
-});
+class Server {
+  constructor(options) {
+    options = options || {};
+    this.url = options.url || 'mongodb://localhost:27017/okr';
+    this.port = options.port || 8080;
+  }
+
+  start() {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Connect sharedb and mongodb
+        self.context = yield connect(self.url, {
+          db: { promoteLongs: false }
+        });
+        // Drop the db
+        yield self.context.db.dropDatabase();
+        // Boot server
+        yield boot(self.port, self.context);
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  stop() {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Shutdown sharedb
+        yield self.context.collaborationServer.destroy();
+        // Shutdown browser-mongodb
+        yield self.context.browserMongoDBServer.destroy();
+        // Close the db server
+        self.context.db.close();
+        resolve();
+      }).catch(reject);
+    });
+  }
+}
+
+module.exports = Server;

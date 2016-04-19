@@ -23,5 +23,8 @@
     "mongodb": "^2.1.16",
     "sharedb": "^0.11.35",
     "sharedb-mongo": "^0.8.7"
+  },
+  "devDependencies": {
+    "socket.io-client": "^1.4.5"
   }
 }

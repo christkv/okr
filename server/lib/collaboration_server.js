@@ -22,6 +22,17 @@ class CollaborationServer {
     });
   }
 
+  destroy() {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      self.backend.close(function(err) {
+        if(err) return reject(err);
+        resolve();
+      });
+    });
+  }
+
   handleSocket(socket) {
     // Get the db and sharedb context
     var backend = this.backend;

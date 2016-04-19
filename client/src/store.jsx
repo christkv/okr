@@ -1,6 +1,8 @@
 "use strict"
 
 import co from 'co';
+import {MongoClient, SocketIOTransport} from 'browser-mongodb/client';
+import ioClient from 'socket.io-client';
 
 var fakeState = {
   edit: false,
@@ -154,9 +156,6 @@ class OKRState {
           ? objectiveChanged(this.state, action.value)
           : keyResultChanged(this.state, action.value);
       } else if(action.type == Store.OKR_RATING_CHANGED) {
-        console.log("------------------------------------------")
-        console.log(action)
-
         this.state.objectives = keyResultRatingChanged(this.state,
           action.value.objectiveId,
           action.value.keyResultId, action.value.value)
@@ -185,6 +184,7 @@ class UserStore {
 
     return new Promise((resolve, reject) => {
       co(function*() {
+        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! LOAD USER")
         self.state = fakeUserState;
         resolve(!user ? self : new UserStore(fakeUserState));
       }).catch(reject);
@@ -218,6 +218,29 @@ export default class Store {
     this.okr = new OKRState();
     this.user = new UserStore();
     this.tags = new TagsStore();
+  }
+
+  connect(url) {
+    url = url || 'http://localhost:9090';
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        //
+        // Client connection
+        //
+        var client = new MongoClient(new SocketIOTransport(ioClient.connect, {}));
+
+        // Create an instance
+        try {
+          // Attempt to connect
+          var connectedClient = yield client.connect(url);
+        } catch(e) {
+          console.log(e)
+        }
+
+        resolve();
+      }).catch(reject);
+    });
   }
 
   OKR() {
