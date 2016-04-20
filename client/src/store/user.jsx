@@ -19,6 +19,7 @@ export default class Users {
     return new Promise((resolve, reject) => {
       co(function*() {
         // console.log("-------------------------------- loadUser 0")
+
         // Load a user by userId
         var user = yield self.backend.loadUser(username);
         if(user == null) return reject(new Error(`failed to locate user {username}`));
@@ -59,6 +60,18 @@ class User {
 
   get title() {
     return this.state.title;
+  }
+
+  get team() {
+    return this.state.team;
+  }
+
+  get managers() {
+    return this.state.manager;
+  }
+
+  get reports() {
+    return this.state.reports;
   }
 
   get avatar() {

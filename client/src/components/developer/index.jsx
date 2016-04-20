@@ -73,18 +73,40 @@ var Menu = React.createClass({
           // Get the backend
           var mongoClient = store.backend.client;
           console.log("----------- navigate 1")
-          // Insert a user
-          var result = yield mongoClient.db('okr').collection('users').updateOne({
-            username:'christkv'
-          }, {
-            $set: {
-              username: 'ole',
-              name: 'Ole Peterson',
-              title: 'Lead',
-              roles: ['admin'],
-              avatar: 'https://pbs.twimg.com/profile_images/668854490347388928/OV9501o7.jpg'
-            }
-          }, {upsert:true});
+          // Delete all the users
+          yield mongoClient.db('okr').collection('users').deleteMany({});
+          yield mongoClient.db('okr').collection('teams').deleteMany({});
+
+          var results = yield mongoClient.db('okr').collection('teams').insertMany([{
+            username: 'nodejs',
+            name: 'Node.js team',
+            members: ['ole']
+          }]);
+
+          // Insert a user an hierarchy
+          var result = yield mongoClient.db('okr').collection('users').insertMany([{
+              username: 'ole', name: 'Ole Peterson', title: 'Developer',
+              roles: ['user'], avatar: 'https://pbs.twimg.com/profile_images/668854490347388928/OV9501o7.jpg',
+              managers: ['peter', 'anders'],
+              teams: {
+                in: ['nodejs']
+              }
+            }, {
+              username: 'peter', name: 'Peter Peterson', title: 'Lead',
+              roles: ['user'], avatar: 'https://pbs.twimg.com/profile_images/668854490347388928/OV9501o7.jpg',
+              managers: ['boss'],
+              teams: {
+                manages: ['nodejs']
+              }
+            }, {
+              username: 'anders', name: 'Anders Anderson', title: 'Lead',
+              roles: ['user'], avatar: 'https://pbs.twimg.com/profile_images/668854490347388928/OV9501o7.jpg',
+              managers: ['boss'],
+              teams: {
+                manages: ['nodejs']
+              }
+            },
+          ]);
           console.log("----------- navigate 2")
 
 

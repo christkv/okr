@@ -46,7 +46,7 @@ function connect(url, options) {
       // Create instance of shared db
       var server = yield new CollaborationServer(url).connect();
       // Create a new instance of BrowserMongoDBServer
-      var browserMongoDBServer = new BrowserMongoDBServer(db);
+      var browserMongoDBServer = new BrowserMongoDBServer(db, {raw:true});
       // Resolve with the values
       res({db: db, collaborationServer: server, browserMongoDBServer: browserMongoDBServer});
     }).catch(rej);

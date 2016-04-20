@@ -15,23 +15,23 @@ export default React.createClass({
     console.log(this.props.user)
 
     // Do we have a manager
-    var manager = this.props.manager
+    var manager = this.props.user.manager
       ? ( <Row>
           <div className='manager header'>
             <h5>Manager</h5>
             <Col md={2}>
-              <Image circle src={this.props.manager.avatar} className='avatar_min'/>
+              <Image circle src={this.props.user.manager.avatar} className='avatar_min'/>
             </Col>
             <Col md={10}>
-              {this.props.manager.name}
+              {this.props.user.manager.name}
             </Col>
           </div>
         </Row> )
       : ( <span/> );
 
     // Reports
-    var reports = this.props.reports
-      ? this.props.reports.map(function(report) {
+    var reports = this.props.user.reports
+      ? this.props.user.reports.map(function(report) {
         return (
           <Row className='report header'>
             <Col md={2}>
@@ -46,10 +46,10 @@ export default React.createClass({
       : ( <span/> );
 
     // Create the label
-    var label = this.props.team ? 'Team Members' : 'Reports';
+    var label = this.props.user.team ? 'Team Members' : 'Reports';
 
     // Reports view
-    var report = this.props.reports
+    var report = this.props.user.reports
       ? ( <Row>
             <div className='reports header'>
               <h5>{label}</h5>
@@ -74,7 +74,7 @@ export default React.createClass({
         </Row> )
       : ( <span/> );
 
-    var team = this.props.team
+    var team = this.props.user.team
       ? ( <Row className='header'>
           <Col md={2}>
             <Image circle src={this.props.team.avatar} className='avatar_max'/>
@@ -83,7 +83,7 @@ export default React.createClass({
             <Row>
               <Col md={12}>
                 <h5>Team</h5>
-                <h4>{this.props.team.title}</h4>
+                <h4>{this.props.user.team.title}</h4>
               </Col>
             </Row>
           </Col>
