@@ -3,6 +3,9 @@
 var BrowserMongoDBServer = require('browser-mongodb').Server,
   SocketIOTransport = require('browser-mongodb').SocketIOTransport;
 
+// Custom commands
+var CurrentUserCommand = require('./commands/current_user');
+
 class Server {
   constructor(db, options) {
     this.db = db;
@@ -13,8 +16,14 @@ class Server {
     var self = this;
     // Create the browser server
     this.server = new BrowserMongoDBServer(this.db, this.options);
+
+    // Register current user command
+    this.server.registerCommand('currentUser', CurrentUserCommand.schema, new CurrentUserCommand());
+
+    // Create socket transport
+    this.socketTransport = new SocketIOTransport(httpServer);
     // Add a socket transport
-    this.server.registerHandler(new SocketIOTransport(httpServer));
+    this.server.registerHandler(this.socketTransport);
     // Get the channel
     this.channel = this.server.channel('mongodb');
 
@@ -25,7 +34,7 @@ class Server {
 
     // Return a promise
     return new Promise((resolve, reject) => {
-      resolve(self);
+      resolve(this.socketTransport.io);
     });
   }
 

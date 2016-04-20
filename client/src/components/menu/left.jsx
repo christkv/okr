@@ -11,6 +11,9 @@ export default React.createClass({
 
   // Render the component
   render: function() {
+    console.log("=============================== left menu render")
+    console.log(this.props.user)
+
     // Do we have a manager
     var manager = this.props.manager
       ? ( <Row>

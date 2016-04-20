@@ -24,11 +24,17 @@ export default React.createClass({
     co(function*() {
       // Get the navigated to user
       var userId = self.props.params.userId;
-      console.log("--------- load the user :: " + userId)
+      // console.log("--------- load the user 0 :: " + userId)
+      // console.log(self.props.params)
       // Load the navigated to user
-      var user = yield self.store.User().load(userId);
-
-
+      var user = yield self.props.store.User().load(userId);
+      // console.log("--------- load the user 1 :: " + userId)
+      console.log("------------------- loaded menu")
+      console.log(user)
+      // Update the state
+      self.setState({user: user});
+    }).catch(function(e) {
+      console.log(e.stack)
     });
   },
 

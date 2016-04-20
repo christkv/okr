@@ -38,7 +38,6 @@ export default React.createClass({
     co(function*() {
       yield store.connect('http://localhost:9090');
     }).catch(function(e) {
-      console.log(e.stack);
     });
   },
 
@@ -64,9 +63,37 @@ var Menu = React.createClass({
     });
   },
 
-  navigate: function(user) {
+  navigate: function(user, role) {
     return function() {
-      browserHistory.push('/user/ole')
+      co(function*(){
+        console.log("--------------------------------- navigate :: " + user + " :: " + role)
+        // Setup a scenario for a valid user as user view
+        if('user-as-user') {
+          console.log("----------- navigate 0")
+          // Get the backend
+          var mongoClient = store.backend.client;
+          console.log("----------- navigate 1")
+          // Insert a user
+          var result = yield mongoClient.db('okr').collection('users').updateOne({
+            username:'christkv'
+          }, {
+            $set: {
+              username: 'ole',
+              name: 'Ole Peterson',
+              title: 'Lead',
+              roles: ['admin'],
+              avatar: 'https://pbs.twimg.com/profile_images/668854490347388928/OV9501o7.jpg'
+            }
+          }, {upsert:true});
+          console.log("----------- navigate 2")
+
+
+          browserHistory.push('/user/ole')
+        }
+
+      }).catch(function(e) {
+        console.log(e.stack)
+      });
     }
   },
 

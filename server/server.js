@@ -16,22 +16,19 @@ function boot(port, context) {
       // Create http server
       var server = require('http').createServer(app);
 
-      // Create socket.io Connection
-      var io = require('socket.io')(server);
-
       // Connect http server
       server.listen(port, function() {
         console.log('Server listening at port %d', port);
         // Resolve
-        res({app: app, server: server, io: io});
+        res({app: app, server: server});//, io: io});
       });
 
-      // Attach the mongodb server
-      yield context.browserMongoDBServer.connect(server);
+      // Attach the mongodb browser library but use the io socket for the
+      // collaborationServer aswell
+      var io = yield context.browserMongoDBServer.connect(server);
 
       // Add connect handler for socket.io
       io.on('connection', function (socket) {
-        // Handle connection for collaborationServer
         context.collaborationServer.handleSocket(socket);
       });
 
