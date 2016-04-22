@@ -16,7 +16,7 @@ export default React.createClass({
 
   // Close modal
   closeModal: function(e) {
-    if(this.props.onCloseModal) this.props.onCloseModal();
+    if(this.props.closeModal) this.props.closeModal();
   },
 
   onSearch: function(searchTerm) {

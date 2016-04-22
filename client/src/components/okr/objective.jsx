@@ -2,52 +2,34 @@ import React from 'react';
 import {ProgressBar, Label, OverlayTrigger, Popover} from 'react-bootstrap';
 import KeyResult from './key_result';
 import AddKeyResult from './add_keyresult';
+import {dispatch} from '../utils';
+import Actions from '../../store/constants';
 
 export default React.createClass({
   getInitialState: function() {
     return {keyResults: [], addKeyResultIsOpen: false};
   },
 
-  // Key result changed
-  onKeyResultChange: function(change, value, keyResult) {
-    if(change == 'modifiedText' && this.props.onObjectiveChange) {
-      this.props.onObjectiveChange({
-        type: 'keyResultChange', objectiveId: this.props.data.id,
-        keyResultId: keyResult.id, value: value
-      });
-    } else if(change == 'addTag' && this.props.onObjectiveChange) {
-      this.props.onObjectiveChange({
-        type: 'addKeyResultTag', objectiveId: this.props.data.id,
-        keyResultId: keyResult.id, keyResult: keyResult
-      });
-    } else if(change == 'ratingChanged' && this.props.onObjectiveChange) {
-      this.props.onObjectiveChange({
-        type: 'ratingChanged', objectiveId: this.props.data.id,
-        keyResultId: keyResult.id, keyResult: keyResult,
-        value: value
-      });
-    }
-  },
-
   // Objective changed
   onObjectiveChange: function(e) {
-    if(this.props.onObjectiveChange) {
-      this.props.onObjectiveChange({
-        type: 'objectiveChange', objectiveId: this.props.data.id,
-        value: e.target.value
-      });
-    }
+    dispatch(this.props, Actions.OKR_OBJECTIVE_CHANGED, { objective_id: this.props.data.id, text: e.target.value });
+  },
+
+  onLink: function(e) {
+    dispatch(this.props, Actions.OKR_LINK, { objective_id: this.props.data.id });
+  },
+
+  onRemoveObjective: function(e) {
+    dispatch(this.props, Actions.OKR_DELETE_OBJECTIVE, { objective_id: this.props.data.id });
   },
 
   // Add a tag
   onAddTag: function(e) {
-    if(this.props.onChange) {
-      this.props.onChange('addTag', null, this.props.data);
-    }
+    dispatch(this.props, Actions.OKR_ADD_TAG, { objective_id: this.props.data.id });
   },
 
-  dispatch: function(event, message) {
-    if(this.props.dispatch) this.props.dispatch(event, message);
+  dispatch(event, message) {
+    dispatch(this.props, event, Object.assign(message, { objective_id: this.props.data.id }));
   },
 
   // Render the component
@@ -59,7 +41,7 @@ export default React.createClass({
         data={keyResult}
         edit={this.props.edit}
         rate={this.props.rate}
-        onChange={this.onKeyResultChange}/>
+        dispatch={this.dispatch} />
     });
 
     // Handle if the component is in edit more or not
@@ -107,6 +89,15 @@ export default React.createClass({
           </OverlayTrigger> )
       : (<span/>);
 
+    // Remote a add keyResult button
+    var removeObjective = this.props.edit
+      ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Remove an Objective">Remove an objective and all its Key Results.</Popover>}>
+            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={this.onRemoveObjective}>
+              Delete
+            </button>
+          </OverlayTrigger> )
+      : (<span/>);
+
     // Create a add keyResult button
     var addKeyResult = this.props.edit
       ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Add Key Result">Add a new key result.</Popover>}>
@@ -119,7 +110,7 @@ export default React.createClass({
     // Create a add keyResult button
     var linkButton = this.props.edit
       ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Link Objective">Link Objective.</Popover>}>
-            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={this.onLinkObjective}>
+            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={this.onLink}>
               Link
             </button>
           </OverlayTrigger> )
@@ -138,11 +129,12 @@ export default React.createClass({
               </td>
               <td colSpan="2">{objective}</td>
               <td><ProgressBar now={okrCalculation} label="%(percent)s%" /></td>
-              <td>{addKeyResult}<br/>{linkButton}</td>
+              <td>{addKeyResult}<br/>{linkButton}<br/>{removeObjective}</td>
             </tr>
             {keyResults}
           </tbody>
         </table>
+
         <AddKeyResult
           id={this.props.data.id}
           isOpen={this.state.addKeyResultIsOpen}

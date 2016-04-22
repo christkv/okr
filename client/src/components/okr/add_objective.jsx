@@ -65,8 +65,8 @@ export default React.createClass({
             <Input type="textarea" label="Objective" placeholder="Write objective" onChange={this.onChange}/>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-default" onClick={this.closeModal}>Close</button>
             <button type="button" className="btn btn-primary" onClick={this.onSave}>Add</button>
+            <button type="button" className="btn btn-default" onClick={this.closeModal}>Close</button>
           </div>
         </div>
       </Modal>

@@ -2,30 +2,28 @@ import React from 'react';
 import {ProgressBar, Label, Popover, OverlayTrigger} from 'react-bootstrap';
 import NumberInput from 'react-number-input';
 import AceEditor from 'react-ace';
+import Actions from '../../store/constants';
+import {dispatch} from '../utils';
 
 export default React.createClass({
-  onChange: function(e) {
-    if(this.props.onChange) {
-      this.props.onChange('modifiedText', e.target.value, this.props.data);
-    }
-  },
-
   onAddTag: function(e) {
-    if(this.props.onChange) {
-      this.props.onChange('addTag', null, this.props.data);
-    }
+    dispatch(this.props, Actions.OKR_ADD_TAG, {key_result_id: this.props.data.id});
   },
 
   onRemoveKeyResult: function(e) {
-    if(this.props.onChange) {
-      this.props.onChange('remove', null, this.props.data);
-    }
+    dispatch(this.props, Actions.OKR_DELETE_KEY_RESULT, {key_result_id: this.props.data.id});
+  },
+
+  onLink: function(e) {
+    dispatch(this.props, Actions.OKR_LINK, {key_result_id: this.props.data.id});
   },
 
   onRatingChange: function(value) {
-    if(this.props.onChange) {
-      this.props.onChange('ratingChanged', parseInt(event.target.value, 10), this.props.data);
-    }
+    dispatch(this.props, Actions.OKR_KEY_RESULT_RATE_CHANGED, {key_result_id: this.props.data.id, rating: parseInt(event.target.value, 10)});
+  },
+
+  onChange: function(change) {
+    dispatch(this.props, Actions.OKR_KEY_RESULT_CHANGED, {key_result_id: this.props.data.id, text: change});
   },
 
   render: function() {
@@ -39,6 +37,7 @@ export default React.createClass({
           height={150}
           width="100%"
           name={name}
+          onChange={this.onChange}
           editorProps={{$blockScrolling: true}}
         /> )
       : ( <label>{this.props.data.keyResult}</label> );
@@ -87,7 +86,7 @@ export default React.createClass({
     // Create a add keyResult button
     var linkButton = this.props.edit
       ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Link Objective">Link Objective.</Popover>}>
-            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={this.onLinkObjective}>
+            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={this.onLink}>
               Link
             </button>
           </OverlayTrigger> )

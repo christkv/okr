@@ -7,28 +7,18 @@ import {dispatch} from '../utils';
 
 export default React.createClass({
   getInitialState: function() {
-    return {text: ''}
-  },
-
-  componentWillReceiveProps: function(nextProps) {
-    this.setState({ text: '' });
+    return {}
   },
 
   closeModal: function(e) {
     if(this.props.closeModal) this.props.closeModal();
   },
 
-  onChange: function(e) {
-    this.setState({ text: e.target.value });
-  },
-
-  onSave: function(e) {
+  onDelete: function(e) {
     // Close dialog
     this.props.closeModal()
     // Dispatch new OKR
-    dispatch(this.props, Actions.OKR_ADD_NEW_KEY_RESULT, {
-      objective_id: this.props.id, text: this.state.text
-    });
+    dispatch(this.props, Actions.OKR_CONFIRM_DELETE, this.props.data);
   },
 
   // Render the component
@@ -60,14 +50,11 @@ export default React.createClass({
               <span aria-hidden="true">&times;</span>
               <span className="sr-only">Close</span>
             </button>
-            <h4 className="modal-title">Add New Key Result</h4>
-          </div>
-          <div className="modal-body">
-            <Input type="textarea" label="Key Result" placeholder="Write Key Result" onChange={this.onChange}/>
+            <h4 className="modal-title">Confirm delete</h4>
           </div>
           <div className="modal-footer">
-            <button type="button" className="btn btn-primary" onClick={this.onSave}>Add</button>
-            <button type="button" className="btn btn-default" onClick={this.closeModal}>Close</button>
+            <button type="button" className="btn btn-primary" onClick={this.onDelete}>Delete</button>
+            <button type="button" className="btn btn-default" onClick={this.closeModal}>Cancel</button>
           </div>
         </div>
       </Modal>

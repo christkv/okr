@@ -5,7 +5,9 @@ import Objective from './okr/objective';
 import co from 'co';
 import AddTag from './okr/add_tag';
 import AddObjective from './okr/add_objective';
-import Actions from '../store/constants'
+import Actions from '../store/constants';
+import Link from './okr/link';
+import ConfirmDelete from './okr/confirm_delete';
 
 export default React.createClass({
   getInitialState: function() {
@@ -40,13 +42,26 @@ export default React.createClass({
   dispatch(event, message) {
     console.log("============================================== dispatch :: " + event)
     console.log(message)
+    if(event == Actions.OKR_LINK) {
+      return this.setState({linkIsOpen:true});
+    } else if(event == Actions.OKR_ADD_TAG) {
+      return this.setState({addTagIsOpen:true});
+    } else if(event == Actions.OKR_DELETE_OBJECTIVE || event == Actions.OKR_DELETE_KEY_RESULT) {
+      return this.setState({confirmDeleteOpen: true, confirmDeleteData: message});
+    }
+
     // Dispatch the event upwards
     if(this.props.dispatch) this.props.dispatch(event, message);
   },
 
   // Close any of the modal forms
   closeModal: function() {
-    this.setState({ addTagIsOpen:false, addObjectiveIsOpen: false, addKeyResultIsOpen:false });
+    this.setState({ addTagIsOpen:false,
+      addObjectiveIsOpen: false,
+      addKeyResultIsOpen:false,
+      linkIsOpen: false,
+      confirmDeleteOpen: false
+    });
   },
 
   // Render the okr component
@@ -111,6 +126,21 @@ export default React.createClass({
           closeModal={this.closeModal}
           store={this.props.store}
           dispatch={this.dispatch}
+        />
+
+        <Link
+          isOpen={this.state.linkIsOpen}
+          closeModal={this.closeModal}
+          store={this.props.store}
+          dispatch={this.dispatch}
+        />
+
+        <ConfirmDelete
+          isOpen={this.state.confirmDeleteOpen}
+          closeModal={this.closeModal}
+          store={this.props.store}
+          dispatch={this.dispatch}
+          data={this.state.confirmDeleteData}
         />
       </div>
     );
