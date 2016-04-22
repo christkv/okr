@@ -46,21 +46,12 @@ export default React.createClass({
     }
   },
 
-  // Add a new key result
-  onAddKeyResult: function(e) {
-    this.setState({addKeyResultIsOpen:true});
-  },
-
-  closeKeyResult: function() {
-    this.setState({addKeyResultIsOpen:false});
-  },
-
-  onKeyResultSave: function() {
+  dispatch: function(event, message) {
+    if(this.props.dispatch) this.props.dispatch(event, message);
   },
 
   // Render the component
   render: function() {
-    console.log("================== render objective")
     // Render the key results
     var keyResults = this.props.data.keyResults.map((keyResult) => {
       return <KeyResult
@@ -119,7 +110,7 @@ export default React.createClass({
     // Create a add keyResult button
     var addKeyResult = this.props.edit
       ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Add Key Result">Add a new key result.</Popover>}>
-            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={this.onAddKeyResult}>
+            <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={() => { this.setState({addKeyResultIsOpen:true}); }}>
               Add
             </button>
           </OverlayTrigger> )
@@ -153,9 +144,10 @@ export default React.createClass({
           </tbody>
         </table>
         <AddKeyResult
+          id={this.props.data.id}
           isOpen={this.state.addKeyResultIsOpen}
-          closeModal={this.closeKeyResult}
-          onSave={this.onKeyResultSave}
+          closeModal={() => {this.setState({addKeyResultIsOpen:false});}}
+          dispatch={this.dispatch}
         />
       </div>
     );

@@ -2,23 +2,32 @@ import Modal from 'react-modal';
 import React from 'react';
 import co from 'co';
 import {Input} from 'react-bootstrap';
+import Actions from '../../store/constants';
 
 export default React.createClass({
   getInitialState: function() {
-    return {}
+    return {text: ''}
   },
 
-  // Component became visible
-  componentDidMount: function() {
+  componentWillReceiveProps: function(nextProps) {
+    this.setState({ text: '' });
   },
 
-  // Close modal
   closeModal: function(e) {
     if(this.props.closeModal) this.props.closeModal();
   },
 
-  onSave: function(e) {
+  onChange: function(e) {
+    this.setState({ text: e.target.value });
+  },
 
+  onSave: function(e) {
+    // Close dialog
+    this.props.closeModal()
+    // Dispatch new OKR
+    if(this.props.dispatch) this.props.dispatch(Actions.OKR_ADD_NEW_KEY_RESULT, {
+      objective_id: this.props.id, text: this.state.text
+    });
   },
 
   // Render the component
@@ -53,7 +62,7 @@ export default React.createClass({
             <h4 className="modal-title">Add New Key Result</h4>
           </div>
           <div className="modal-body">
-            <Input type="textarea" label="Key Result" placeholder="Write key result"/>
+            <Input type="textarea" label="Key Result" placeholder="Write Key Result" onChange={this.onChange}/>
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-default" onClick={this.closeModal}>Close</button>

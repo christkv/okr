@@ -6,6 +6,7 @@ import SearchBar from '../search';
 import OKR from '../okr';
 import List from '../comment/list';
 import {default as SideBar} from 'react-sidebar';
+import Actions from '../../store/constants'
 import co from 'co';
 
 export default React.createClass({
@@ -35,6 +36,9 @@ export default React.createClass({
     this.onRouteChanged({_routePath: this.props.location ? this.props.location.pathname : ''});
   },
 
+  //
+  // Component browser route changed, we need to refresh out data
+  //
   onRouteChanged: function(state) {
     var self = this;
 
@@ -48,14 +52,8 @@ export default React.createClass({
 
       // Are we in edit mode
       if(user.username == currentUser.username) {
-        state.edit = true;
-        state.rate = false;
+        state = Object.assign(state, {edit: true, rate: false});
       }
-
-      console.log("------------------------------------ onRouteChanged")
-      console.log("user.username = " + user.username)
-      console.log("currentUser.username = " + currentUser.username)
-      console.log(state)
 
       // Get the user okr
       var okr = yield self.props.store.OKR().load(user, currentUser);
@@ -66,20 +64,24 @@ export default React.createClass({
     });
   },
 
-  commentsButtonClicked: function() {
-    this.setState({ sideBarOpen: true });
+  //
+  // All actions are dispatched through this handler
+  //
+  dispatch(event, command) {
+    if(event == Actions.OKR_COMMENT_BUTTON_CLICKED) {
+      this.setState({ sideBarOpen: true });
+    }
   },
 
-  onSideBarCloseClicked: function() {
-    this.setState({ sideBarOpen: false });
-  },
-
+  //
+  // Render the component
+  //
   render: function() {
     var sidebar = (
       <div className='sidebar'>
         <div  className='sidebar_btn_toolbar'>
           <ButtonToolbar>
-            <Button onClick={this.onSideBarCloseClicked} bsSize='small'>
+            <Button onClick={() => { this.setState({ sideBarOpen: false }); }} bsSize='small'>
               <Glyphicon glyph="align-left" />
             </Button>
           </ButtonToolbar>
@@ -97,7 +99,7 @@ export default React.createClass({
         pullRight={true}
         sidebar={sidebar}
         open={this.state.sideBarOpen}
-        onSetOpen={this.onSideBarCloseClicked}
+        onSetOpen={() => { this.setState({ sideBarOpen: false }); }}
       >
         <div className='mainContainer'>
           <TopMenu
@@ -125,7 +127,9 @@ export default React.createClass({
                   store={this.props.store}
                   currentUser={this.state.currentUser}
                   user={this.state.user}
-                  okr={this.state.okr} />
+                  okr={this.state.okr}
+                  dispatch={this.dispatch}
+                />
               </Row>
             </Col>
           </Row>

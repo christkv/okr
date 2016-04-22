@@ -22,7 +22,6 @@ export default React.createClass({
 
   // Component became visible
   componentDidMount: function() {
-    // Set the default properties
     this.setState({
       currentUser: this.props.currentUser,
       user: this.props.user,
@@ -34,16 +33,15 @@ export default React.createClass({
     this.setState({
       edit: typeof nextProps.edit == 'boolean' ? nextProps.edit : false,
       rate: typeof nextProps.rate == 'boolean' ? nextProps.rate : true,
+      editOKR: typeof nextProps.edit == 'boolean' ? nextProps.edit : false
     });
   },
 
   dispatch(event, message) {
-    if(this.props.dispatch) dispatch(event, message);
-  },
-
-  // On Add objective
-  onAddObjective: function() {
-    this.setState({ addObjectiveIsOpen: true });
+    console.log("============================================== dispatch :: " + event)
+    console.log(message)
+    // Dispatch the event upwards
+    if(this.props.dispatch) this.props.dispatch(event, message);
   },
 
   // Close any of the modal forms
@@ -62,10 +60,11 @@ export default React.createClass({
         return (
           <Objective key={objective.id}
             data={objective}
-            edit={this.state.edit}
+            edit={this.state.editOKR}
             rate={this.state.rate}
             tags={objective.tags}
             store={this.props.store}
+            dispatch={this.dispatch}
           />
         )
       });
@@ -74,13 +73,13 @@ export default React.createClass({
     // Edit button
     var editButton = (<span/>);
     if(this.state.edit) {
-      editButton = ( <ToogleButton values={["edit", "save"]} onClick={() => { this.setState({edit:true}) }}/> );
+      editButton = ( <ToogleButton index={this.state.editOKR ? 1 : 0} values={["edit", "save"]} onClick={() => { this.setState({editOKR: !this.state.editOKR}) }}/> );
     }
 
     // Create a add keyResult button
     var addObjective = this.state.edit
       ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Add New Objective">Add a new objective.</Popover>}>
-            <button className="toggle_button btn btn-primary btn-xs" onClick={this.onAddObjective}>
+            <button className="toggle_button btn btn-primary btn-xs" onClick={() => { this.setState({ addObjectiveIsOpen: true }); }}>
               Add
             </button>
           </OverlayTrigger> )
@@ -111,6 +110,7 @@ export default React.createClass({
           isOpen={this.state.addObjectiveIsOpen}
           closeModal={this.closeModal}
           store={this.props.store}
+          dispatch={this.dispatch}
         />
       </div>
     );

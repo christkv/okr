@@ -2,18 +2,32 @@ import Modal from 'react-modal';
 import React from 'react';
 import co from 'co';
 import {Input} from 'react-bootstrap';
+import Actions from '../../store/constants';
 
 export default React.createClass({
   getInitialState: function() {
-    return {}
+    return {text: ''}
   },
 
-  // Close modal
+  componentWillReceiveProps: function(nextProps) {
+    this.setState({ text: '' });
+  },
+
   closeModal: function(e) {
     if(this.props.closeModal) this.props.closeModal();
   },
 
+  onChange: function(e) {
+    this.setState({ text: e.target.value });
+  },
+
   onSave: function(e) {
+    // Close dialog
+    this.props.closeModal()
+    // Dispatch new OKR
+    if(this.props.dispatch) this.props.dispatch(Actions.OKR_ADD_NEW_OBJECTIVE, {
+      text: this.state.text
+    });
   },
 
   // Render the component
@@ -48,7 +62,7 @@ export default React.createClass({
             <h4 className="modal-title">Add New Objective</h4>
           </div>
           <div className="modal-body">
-            <Input type="textarea" label="Objective" placeholder="Write objective"/>
+            <Input type="textarea" label="Objective" placeholder="Write objective" onChange={this.onChange}/>
           </div>
           <div className="modal-footer">
             <button type="button" className="btn btn-default" onClick={this.closeModal}>Close</button>

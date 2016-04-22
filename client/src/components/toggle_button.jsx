@@ -5,6 +5,13 @@ export default React.createClass({
     return {values: this.props.values, index: 0};
   },
 
+  componentWillReceiveProps: function(nextProps) {
+    if(typeof nextProps.index == 'number'
+      && nextProps.index < this.state.values.length) {
+      this.setState({index: nextProps.index});
+    }
+  },
+
   onClick: function() {
     // Update the index of the button
     this.state.index = (this.state.index + 1) % this.state.values.length;
