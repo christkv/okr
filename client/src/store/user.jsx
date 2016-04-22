@@ -3,10 +3,6 @@
 import Store from './constants';
 import co from 'co';
 
-var fakeUserState = {
-  role: 'admin', name: 'peter robin', username: 'ole'
-}
-
 export default class Users {
   constructor(backend) {
     this.backend = backend;
@@ -18,13 +14,9 @@ export default class Users {
 
     return new Promise((resolve, reject) => {
       co(function*() {
-        // console.log("-------------------------------- loadUser 0")
-
         // Load a user by userId
         var user = yield self.backend.loadUser(username);
         if(user == null) return reject(new Error(`failed to locate user {username}`));
-        // console.log("-------------------------------- loadUser 1")
-        // console.log(user)
         // Resolve the user
         resolve(new User(user));
       }).catch(reject);
@@ -36,12 +28,9 @@ export default class Users {
 
     return new Promise((resolve, reject) => {
       co(function*() {
-        // console.log("-------------------------------- loadCurrent 0")
         // Load a user by userId
         var user = yield self.backend.loadCurrent();
         if(user == null) return reject(new Error('failed to locate current user'));
-        // console.log("-------------------------------- loadCurrent 1")
-        // console.log(user)
         // Resolve the user
         resolve(new User(user.user));
       }).catch(reject);
@@ -62,16 +51,30 @@ class User {
     return this.state.title;
   }
 
-  get team() {
-    return this.state.team;
+  get teams() {
+    return this.state.reporting && this.state.reporting.teams
+      ? this.state.reporting.teams
+      : [];
   }
 
   get managers() {
-    return this.state.manager;
+    return this.state.reporting && this.state.reporting.managers
+      ? this.state.reporting.managers
+      : [];
   }
 
   get reports() {
-    return this.state.reports;
+    return this.state.reporting
+      && this.state.reporting.manages && this.state.reporting.manages.people
+        ? this.state.reporting.manages.people
+        : [];
+  }
+
+  get managedTeams() {
+    return this.state.reporting
+      && this.state.reporting.manages && this.state.reporting.manages.teams
+        ? this.state.reporting.manages.teams
+        : [];
   }
 
   get avatar() {
@@ -80,6 +83,10 @@ class User {
 
   get username() {
     return this.state.username;
+  }
+
+  get id() {
+    return this.state._id.toString();
   }
 
   get role() {

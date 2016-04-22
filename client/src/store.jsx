@@ -23,12 +23,10 @@ export default class Store {
 
     return new Promise((resolve, reject) => {
       co(function*() {
-        console.log("!!!!!!!!!!!!!!! 0")
         // Only connect if not already connected
         if(!self.backend.isConnected()) {
           yield self.backend.connect(url)
         }
-        console.log("!!!!!!!!!!!!!!! 1")
 
         // Resolve
         resolve(self);

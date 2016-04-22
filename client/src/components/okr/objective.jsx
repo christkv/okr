@@ -60,6 +60,7 @@ export default React.createClass({
 
   // Render the component
   render: function() {
+    console.log("================== render objective")
     // Render the key results
     var keyResults = this.props.data.keyResults.map((keyResult) => {
       return <KeyResult

@@ -18,12 +18,12 @@ export default React.createClass({
   },
 
   componentWillReceiveProps: function(nextProps) {
-    var tags = nextProps.data.tags || [];
+    var tags = nextProps.tags || [];
     tags = tags.map(function(tag, index) {
       return {id: index, text: tag};
     })
 
-    var suggestions = nextProps.data.suggestions || [];
+    var suggestions = nextProps.suggestions || [];
     suggestions = suggestions.map(function(tag) {
       return tag.text;
     })
@@ -37,42 +37,38 @@ export default React.createClass({
   },
 
   saveChanges: function() {
-    // Call the save handler
-    if(this.props.onSaveChanges) this.props.onSaveChanges(Object.assign(this.props.data, {
-      tags: this.state.tags.map(function(tag) {
-        return tag.text;
-      })
-    }));
+    // // Call the save handler
+    // if(this.props.onSaveChanges) this.props.onSaveChanges(Object.assign(this.props.data, {
+    //   tags: this.state.tags.map(function(tag) {
+    //     return tag.text;
+    //   })
+    // }));
   },
 
   handleDelete: function(i) {
-    var tags = this.state.tags;
-    tags.splice(i, 1);
-    this.setState({tags: tags});
+    this.state.tags.splice(i, 1);
+    this.setState({tags: this.state.tags});
   },
 
   handleAddition: function(tag) {
-    var tags = this.state.tags;
-    tags.push({
-        id: tags.length + 1,
-        text: tag
+    this.state.tags.push({
+      id: this.state.tags.length + 1, text: tag
     });
+
     this.setState({tags: tags});
   },
 
   handleDrag: function(tag, currPos, newPos) {
-    var tags = this.state.tags;
-
     // mutate array
-    tags.splice(currPos, 1);
-    tags.splice(newPos, 0, tag);
-
+    this.state.tags.splice(currPos, 1);
+    this.state.tags.splice(newPos, 0, tag);
     // re-render
-    this.setState({ tags: tags });
+    this.setState({ tags: this.state.tags });
   },
 
   // Render the component
   render: function() {
+    console.log("!!!!!!!!!!!!!!!!!!!!!! render addtag")
     // Render the modal dialog
     return (
       <Modal
@@ -100,7 +96,7 @@ export default React.createClass({
               <span aria-hidden="true">&times;</span>
               <span className="sr-only">Close</span>
             </button>
-            <h4 className="modal-title">Add Tag - {this.props.data.text}</h4>
+            <h4 className="modal-title">Add Tag - {this.props.text}</h4>
           </div>
           <div className="modal-body container">
             <WithContext tags={this.state.tags}

@@ -15,7 +15,7 @@ class Command {
         //
 
         // Load the fake current user
-        var user = yield mongoClient.db('okr').collection('users').findOne({});
+        var user = yield mongoClient.db('okr').collection('users').findOne({username:'ole'});
         // Resolve the entry
         resolve({ ok: true, user: user});
       }).catch(reject);

@@ -11,28 +11,56 @@ import co from 'co';
 export default React.createClass({
   getInitialState: function() {
     return {
+      edit: false,
+      rate: true,
+
       sideBarOpen: false,
+      _routePath: null,
       comments: [],
       user: {},
       manager: {}
     };
   },
 
+  componentDidUpdate: function() {
+    // Get the current path
+    var newPath = this.props.location ? this.props.location.pathname : '';
+    // Check if the path changed
+    if(this.state._routePath !== newPath) {
+      this.onRouteChanged({ _routePath: newPath });
+    }
+  },
+
   componentDidMount: function() {
+    this.onRouteChanged({_routePath: this.props.location ? this.props.location.pathname : ''});
+  },
+
+  onRouteChanged: function(state) {
     var self = this;
 
     co(function*() {
       // Get the navigated to user
       var userId = self.props.params.userId;
-      // console.log("--------- load the user 0 :: " + userId)
-      // console.log(self.props.params)
-      // Load the navigated to user
+      // Grab the user
       var user = yield self.props.store.User().load(userId);
-      // console.log("--------- load the user 1 :: " + userId)
-      console.log("------------------- loaded menu")
-      console.log(user)
+      // Get the current user
+      var currentUser = yield self.props.store.User().loadCurrent();
+
+      // Are we in edit mode
+      if(user.username == currentUser.username) {
+        state.edit = true;
+        state.rate = false;
+      }
+
+      console.log("------------------------------------ onRouteChanged")
+      console.log("user.username = " + user.username)
+      console.log("currentUser.username = " + currentUser.username)
+      console.log(state)
+
+      // Get the user okr
+      var okr = yield self.props.store.OKR().load(user, currentUser);
       // Update the state
-      self.setState({user: user});
+      self.setState(Object.assign({user: user, currentUser: currentUser, okr: okr}, state));
     }).catch(function(e) {
       console.log(e.stack)
     });
@@ -92,9 +120,12 @@ export default React.createClass({
               </Row>
               <Row>
                 <OKR
-                  commentsButtonClicked={this.commentsButtonClicked}
+                  edit={this.state.edit}
+                  rate={this.state.rate}
                   store={this.props.store}
-                  params={{userId:1}}/>
+                  currentUser={this.state.currentUser}
+                  user={this.state.user}
+                  okr={this.state.okr} />
               </Row>
             </Col>
           </Row>

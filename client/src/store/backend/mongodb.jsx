@@ -18,7 +18,6 @@ var handleReject = function(reject) {
 
 export default class MongoDBBackend {
   constructor() {
-    this.cache = {};
   }
 
   connect(url) {
@@ -47,6 +46,29 @@ export default class MongoDBBackend {
     return this.client && this.client.isConnected();
   }
 
+  loadOKR(username, currentViewingUser) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        console.log("------------------------------------ loadOKR")
+        console.log(username)
+        console.log(currentViewingUser)
+
+        // Grab the collections
+        var okrs = self.client.db('okr').collection('okrs');
+
+        // Have the server send us the currently logged in user
+        var okr = yield okrs
+          .find({username: username, active: true})
+          .limit(1).next();
+        if(!okr) return reject(new Error(`could not locate active okr for user ${username}`));
+        // Resolve the user
+        resolve(okr);
+      }).catch(handleReject(reject));
+    });
+  }
+
   loadCurrent() {
     var self = this;
 
@@ -67,58 +89,60 @@ export default class MongoDBBackend {
 
     return new Promise((resolve, reject) => {
       co(function*() {
-        // Use cached user to avoid any non-needed roundtrips
-        if(self.cache[username]) return resolve(username);
         // Grab the collections
         var users = self.client.db('okr').collection('users');
         var teams = self.client.db('okr').collection('teams');
 
-        // console.log("-------------------------------------------- fetch user")
         // Grab the user from the server
         var user = yield users
           .find({username: username})
           .limit(1).next();
         if(!user) return reject(new Error(`user with id ${username} not found`));
-        // console.log("-------------------------------------------- resolve managers")
-        // Resolve users
-        user.managers = yield users
-          .find({username: {$in: user.managers || []}}).toArray();
 
-        // console.log("-------------------------------------------- resolve teams")
+        if(user.reporting && user.reporting.managers) {
+          // Resolve users
+          user.reporting.managers = yield users
+            .find({username: {$in: user.reporting.managers || []}}).toArray();
+        }
+
         // Resolve the teams the user is in
-        if(user.teams && user.teams.in) {
+        if(user.reporting && user.reporting.teams) {
           // console.log({username: {$in: user.teams.in}})
-          user.teams.in = yield teams
-            .find({username: {$in: user.teams.in}}).toArray();
-            // console.log("-------------------------------------------- resolve teams")
-            // console.log(user.teams.in)
+          user.reporting.teams = yield teams
+            .find({username: {$in: user.reporting.teams}}).toArray();
 
           // Resolve all the team members information
-          for(var i = 0; i < user.teams.in.length; i++) {
-            user.teams.in[i].members = yield users
-              .find({username: {$in: user.teams.in[i].members}}).toArray();
+          for(var i = 0; i < user.reporting.teams.length; i++) {
+            user.reporting.teams[i].members = yield users
+              .find({username: {$in: user.reporting.teams[i].members}}).toArray();
           }
         }
 
-        // console.log("-------------------------------------------- resolve managers")
+        // Resolve the people the user manages if any
+        if(user.reporting
+          && user.reporting.manages
+          && user.reporting.manages.people) {
+
+          // Resolve users
+          user.reporting.manages.people = yield users
+            .find({username: {$in: user.reporting.manages.people || []}}).toArray();
+        }
+
         // Resolve the teams the user manages if any
-        if(user.teams && user.teams.manages) {
-          user.teams.manages = yield teams
-            .find({username: {$in: user.teams.manages}}).toArray();
+        if(user.reporting
+          && user.reporting.manages
+          && user.reporting.manages.teams) {
+
+          // Resolve the teams
+          user.reporting.manages.teams = yield teams
+            .find({username: {$in: user.reporting.manages.teams}}).toArray();
 
           // Resolve all the team members information
-          for(var i = 0; i < user.teams.manages.length; i++) {
-            user.teams.manages[i].members = yield sers
-              .find({username: {$in: user.teams.manages[i].members}}).toArray();
+          for(var i = 0; i < user.reporting.manages.teams.length; i++) {
+            user.reporting.manages.teams[i].members = yield users
+              .find({username: {$in: user.reporting.manages.teams[i].members}}).toArray();
           }
         }
-
-        // console.log("-------------------------------------------- all resolved")
-        // console.log(JSON.stringify(user))
-        // console.log(user)
-
-        // Add user to cache
-        self.cache[username] = user;
 
         // Resolve the user
         resolve(user);

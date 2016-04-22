@@ -8,17 +8,12 @@ export default React.createClass({
     return {}
   },
 
-  // Component became visible
-  componentDidMount: function() {
-  },
-
   // Close modal
   closeModal: function(e) {
     if(this.props.closeModal) this.props.closeModal();
   },
 
   onSave: function(e) {
-
   },
 
   // Render the component
