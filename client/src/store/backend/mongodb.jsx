@@ -69,6 +69,24 @@ export default class MongoDBBackend {
     });
   }
 
+  loadTags() {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      // Grab the collections
+      var tags = self.client.db('okr').collection('tags');
+
+      co(function*() {
+        // Have the server send us the currently logged in user
+        var results = yield tags
+          .find({})
+          .toArray();
+        // Resolve the user
+        resolve(results);
+      }).catch(handleReject(reject));
+    });
+  }
+
   loadCurrent() {
     var self = this;
 

@@ -13,7 +13,7 @@ var fakeTagsState = {
 
 export default class Tags {
   constructor(backend) {
-    this.state = {tags: []};
+    this.backend = backend;
   }
 
   load() {
@@ -21,13 +21,28 @@ export default class Tags {
 
     return new Promise((resolve, reject) => {
       co(function*() {
-        self.state = fakeTagsState;
-        resolve(self);
+        // Load a user by userId
+        var tags = yield self.backend.loadTags();
+        if(tags == null) return reject(new Error(`failed to locate tags`));
+        // Resolve the user
+        resolve(tags.map((t) => {
+          return new Tag(t);
+        }));
       }).catch(reject);
     });
   }
+}
 
-  tags() {
-    return this.state.tags;
+class Tag {
+  constructor(state) {
+    this.state = state;
+  }
+
+  get id() {
+    return this.state.id;
+  }
+
+  get text() {
+    return this.state.text;
   }
 }

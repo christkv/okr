@@ -3,6 +3,7 @@ import React from 'react';
 import Store from '../../store';
 import co from 'co';
 import {WithContext} from 'react-tag-input';
+import Actions from '../../store/constants'
 
 export default React.createClass({
   getInitialState: function() {
@@ -18,17 +19,14 @@ export default React.createClass({
   },
 
   componentWillReceiveProps: function(nextProps) {
+    console.log("!!!!!!!!!!!!!!!!! componentWillReceiveProps")
+    console.log(nextProps)
     var tags = nextProps.tags || [];
     tags = tags.map(function(tag, index) {
       return {id: index, text: tag};
     })
 
-    var suggestions = nextProps.suggestions || [];
-    suggestions = suggestions.map(function(tag) {
-      return tag.text;
-    })
-
-    this.setState({tags: tags, suggestions: suggestions});
+    this.setState({tags: tags, suggestions: nextProps.suggestions || []});
   },
 
   // Close modal
@@ -51,11 +49,17 @@ export default React.createClass({
   },
 
   handleAddition: function(tag) {
+    // Don't allow duplicates
+    for(var t of this.state.tags) {
+      if(t.text == tag) return;
+    }
+
+    // Add to the list of tags
     this.state.tags.push({
       id: this.state.tags.length + 1, text: tag
     });
 
-    this.setState({tags: tags});
+    this.setState({tags: this.state.tags});
   },
 
   handleDrag: function(tag, currPos, newPos) {
@@ -69,6 +73,7 @@ export default React.createClass({
   // Render the component
   render: function() {
     console.log("!!!!!!!!!!!!!!!!!!!!!! render addtag")
+    console.log(this.state)
     // Render the modal dialog
     return (
       <Modal

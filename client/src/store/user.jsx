@@ -6,7 +6,6 @@ import co from 'co';
 export default class Users {
   constructor(backend) {
     this.backend = backend;
-    this.state = {};
   }
 
   load(username) {

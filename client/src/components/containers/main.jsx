@@ -57,8 +57,19 @@ export default React.createClass({
 
       // Get the user okr
       var okr = yield self.props.store.OKR().load(user, currentUser);
+
+      // Load all the tags
+      var tags = yield self.props.store.Tags().load();
+      console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
+      console.log(tags)
+
       // Update the state
-      self.setState(Object.assign({user: user, currentUser: currentUser, okr: okr}, state));
+      self.setState(Object.assign({
+        user: user,
+        currentUser: currentUser,
+        okr: okr,
+        tagSuggestions: tags.map((x) => { return x.text; })
+      }, state));
     }).catch(function(e) {
       console.log(e.stack)
     });
@@ -129,6 +140,7 @@ export default React.createClass({
                   user={this.state.user}
                   okr={this.state.okr}
                   dispatch={this.dispatch}
+                  tagSuggestions={this.state.tagSuggestions}
                 />
               </Row>
             </Col>

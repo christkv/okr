@@ -73,7 +73,16 @@ var Menu = React.createClass({
         yield mongoClient.db('okr').collection('users').deleteMany({});
         yield mongoClient.db('okr').collection('teams').deleteMany({});
         yield mongoClient.db('okr').collection('okrs').deleteMany({});
+        yield mongoClient.db('okr').collection('tags').deleteMany({});
 
+        // Add some tags
+        var results = yield mongoClient.db('okr').collection('tags').insertMany([{
+          text: 'mandatory'
+        }, {
+          text: 'important'
+        }]);
+
+        // Add a team
         var results = yield mongoClient.db('okr').collection('teams').insertMany([{
           username: 'nodejs',
           name: 'Node.js team',

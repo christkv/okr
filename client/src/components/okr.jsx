@@ -9,6 +9,25 @@ import Actions from '../store/constants';
 import Link from './okr/link';
 import ConfirmDelete from './okr/confirm_delete';
 
+//
+// Locate tags field in eithr objective or okr
+//
+function locateTags(search, okr) {
+  for(let objective of okr.objectives) {
+    if(objective.id == search.objective_id) {
+      if(!search.key_result_id) return objective.tags || [];
+
+      for(let keyResult of objective.keyResults) {
+        if(keyResult.id == search.key_result_id) {
+          return keyResult.tags;
+        }
+      }
+    }
+  }
+
+  return [];
+}
+
 export default React.createClass({
   getInitialState: function() {
     return {
@@ -28,6 +47,7 @@ export default React.createClass({
       currentUser: this.props.currentUser,
       user: this.props.user,
       okr: this.props.okr,
+      tags: this.props.tags || []
     });
   },
 
@@ -35,7 +55,8 @@ export default React.createClass({
     this.setState({
       edit: typeof nextProps.edit == 'boolean' ? nextProps.edit : false,
       rate: typeof nextProps.rate == 'boolean' ? nextProps.rate : true,
-      editOKR: typeof nextProps.edit == 'boolean' ? nextProps.edit : false
+      editOKR: typeof nextProps.edit == 'boolean' ? nextProps.edit : false,
+      suggestions: nextProps.tagSuggestions || []
     });
   },
 
@@ -45,7 +66,10 @@ export default React.createClass({
     if(event == Actions.OKR_LINK) {
       return this.setState({linkIsOpen:true});
     } else if(event == Actions.OKR_ADD_TAG) {
-      return this.setState({addTagIsOpen:true});
+      console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!OKR_ADD_TAG")
+      console.log(message)
+
+      return this.setState({addTagIsOpen:true, addTagData: message, tags: locateTags(message, this.props.okr)});
     } else if(event == Actions.OKR_DELETE_OBJECTIVE || event == Actions.OKR_DELETE_KEY_RESULT) {
       return this.setState({confirmDeleteOpen: true, confirmDeleteData: message});
     }
@@ -119,6 +143,7 @@ export default React.createClass({
           store={this.props.store}
           tags={this.state.tags}
           suggestions={this.state.suggestions}
+          data={this.state.addTagData}
         />
 
         <AddObjective
