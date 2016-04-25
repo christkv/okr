@@ -25,7 +25,7 @@ export default React.createClass({
 
   // Add a tag
   onAddTag: function(e) {
-    dispatch(this.props, Actions.OKR_ADD_TAG, { objective_id: this.props.data.id });
+    dispatch(this.props, Actions.OKR_ADD_TAGS, { objective_id: this.props.data.id });
   },
 
   dispatch(event, message) {

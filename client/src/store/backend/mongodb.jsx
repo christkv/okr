@@ -1,7 +1,7 @@
 "use strict"
 
 import co from 'co';
-import {MongoClient, SocketIOTransport} from 'browser-mongodb/client';
+import {MongoClient, SocketIOTransport, ObjectId} from 'browser-mongodb/client';
 import ioClient from 'socket.io-client';
 
 const DISCONNECTED = 0;
@@ -18,6 +18,10 @@ var handleReject = function(reject) {
 
 export default class MongoDBBackend {
   constructor() {
+    this.db = null;
+    this.tags = null;
+    this.okrs = null;
+    this.users = null;
   }
 
   connect(url) {
@@ -33,6 +37,11 @@ export default class MongoDBBackend {
         self.client = yield client.connect(url);
         // Set connected state
         self.state = CONNECTED;
+        // Get the collections
+        self.db = self.client.db('okr');
+        self.tags = self.db.collection('tags');
+        self.okrs = self.db.collection('okrs');
+        self.users = self.db.collection('users');
         // Resolve
         resolve(self);
       }).catch(function(e) {
@@ -46,20 +55,32 @@ export default class MongoDBBackend {
     return this.client && this.client.isConnected();
   }
 
+  /*
+   * OKR Methods
+   */
+  loadOKRById(id) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Have the server send us the currently logged in user
+        var okr = yield self.okrs
+          .find({_id: id})
+          .limit(1).next();
+        if(!okr) return reject(new Error(`could not locate active okr for ${id}`));
+        // Resolve the user
+        resolve(okr);
+      }).catch(handleReject(reject));
+    });
+  }
+
   loadOKR(username, currentViewingUser) {
     var self = this;
 
     return new Promise((resolve, reject) => {
       co(function*() {
-        console.log("------------------------------------ loadOKR")
-        console.log(username)
-        console.log(currentViewingUser)
-
-        // Grab the collections
-        var okrs = self.client.db('okr').collection('okrs');
-
         // Have the server send us the currently logged in user
-        var okr = yield okrs
+        var okr = yield self.okrs
           .find({username: username, active: true})
           .limit(1).next();
         if(!okr) return reject(new Error(`could not locate active okr for user ${username}`));
@@ -73,12 +94,9 @@ export default class MongoDBBackend {
     var self = this;
 
     return new Promise((resolve, reject) => {
-      // Grab the collections
-      var tags = self.client.db('okr').collection('tags');
-
       co(function*() {
         // Have the server send us the currently logged in user
-        var results = yield tags
+        var results = yield self.tags
           .find({})
           .toArray();
         // Resolve the user
@@ -87,6 +105,101 @@ export default class MongoDBBackend {
     });
   }
 
+  addOKRObjective(id, objective) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Add id to objective if none exits
+        if(!objective.id) objective.id = new ObjectId();
+
+        // Have the server send us the currently logged in user
+        var result = yield self.okrs
+          .updateOne({_id: id}, {$push: {objectives: objective}});
+        if(result.modifiedCount == 0) {
+          return reject(new Error(`failed to add objective to okr with id ${id}`))
+        }
+        // Resolve the user
+        resolve(result);
+      }).catch(handleReject(reject));
+    });
+  }
+
+  addOKRKeyResult(id, objectiveId, keyResult) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Add id to objective if none exits
+        if(!keyResult.id) keyResult.id = new ObjectId();
+
+        // Have the server send us the currently logged in user
+        var result = yield self.okrs
+          .updateOne({
+            _id: id, 'objectives.id': objectiveId
+          }, {
+            $push: {'objectives.$.keyResults': keyResult}
+          });
+
+        if(result.modifiedCount == 0) {
+          return reject(new Error(`could not locate objective with id ${objectiveId}`))
+        }
+        // Resolve the user
+        resolve(result);
+      }).catch(handleReject(reject));
+    });
+  }
+
+  deleteKeyResult(id, objectiveId, keyResultId) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Have the server send us the currently logged in user
+        var result = yield self.okrs
+          .updateOne({
+            _id: id, 'objectives.id': objectiveId
+          }, {
+            $pull: {'objectives.$.keyResults': {id: keyResultId}}
+          });
+
+        // No modification happened the key result does not exist
+        if(result.modifiedCount == 0) {
+          return reject(new Error(`could not locate key result with id ${keyResultId}`))
+        }
+
+        // Resolve the user
+        resolve(result);
+      }).catch(reject);
+    });
+  }
+
+  deleteObjective(id, objectiveId) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Have the server send us the currently logged in user
+        var result = yield self.okrs
+          .updateOne({
+            _id: id
+          }, {
+            $pull: {'objectives': {id: objectiveId}}
+          });
+
+        // No modification happened the objective does not exist
+        if(result.modifiedCount == 0) {
+          return reject(new Error(`could not locate objective with id ${objectiveId}`))
+        }
+        // Resolve the user
+        resolve(result);
+      }).catch(reject);
+    });
+  }
+
+  /*
+   * User Methods
+   */
   loadCurrent() {
     var self = this;
 

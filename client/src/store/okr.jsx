@@ -3,31 +3,6 @@
 import Store from './constants';
 import co from 'co';
 
-var fakeState = {
-  edit: false,
-  rate: true,
-  objectives: [{
-    id: 1,
-    objective: 'objective 1',
-    tags: ['core'],
-
-    keyResults: [{
-      id: 5,
-      completeness: 45,
-      keyResult: 'first key result',
-      tags: ['mandatory']
-    }, {
-      id: 6,
-      completeness: 15,
-      keyResult: 'second key result'
-    }]
-  }],
-  auth: [{
-    rights: ['edit'],
-    username: 'ole'
-  }]
-}
-
 // Handle objective text changed
 var objectiveChanged = function(state, change) {
   return state.objectives.map((objective) => {
@@ -100,17 +75,81 @@ export default class OKRs {
       co(function*() {
         // Load a user by userId
         var okr = yield self.backend.loadOKR(user.username, currentViewingUser.username);
-        console.log("!!!!!!!!! fetch okr")
-        console.log(okr)
         // Resolve the user
-        resolve(new OKR(okr));
+        resolve(new OKR(self, okr));
+      }).catch(reject);
+    });
+  }
+
+  loadOKR(id) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Load a user by userId
+        var okr = yield self.backend.loadOKRById(id);
+        // Resolve the user
+        resolve(okr);
+      }).catch(reject);
+    });
+  }
+
+  addNewObjective(id, objective) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Add new objective to okr
+        yield self.backend.addOKRObjective(id, objective);
+        // Resolve
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  addNewKeyResult(id, objectiveId, keyResult) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Add new objective to okr
+        yield self.backend.addOKRKeyResult(id, objectiveId, keyResult);
+        // Resolve
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  deleteKeyResult(id, objectiveId, keyResultId) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Delete the key result
+        yield self.backend.deleteKeyResult(id, objectiveId, keyResultId);
+        // Resolve
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  deleteObjective(id, objectiveId) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Delete the key result
+        yield self.backend.deleteObjective(id, objectiveId);
+        // Resolve
+        resolve();
       }).catch(reject);
     });
   }
 }
 
 class OKR {
-  constructor(state) {
+  constructor(store, state) {
+    this.store = store;
     this.state = state;
   }
 
@@ -118,42 +157,74 @@ class OKR {
     return this.state.objectives ? this.state.objectives : [];
   }
 
-  // dispatch(action) {
-  //   return new Promise((resolve, reject) => {
-  //     if(action.type == Store.OKR_EDIT_BUTTON_CLICKED) {
-  //       this.state.edit = action.value == 1;
-  //     } else if(action.type == Store.OKR_CHANGED) {
-  //       // Update objectives
-  //       this.state.objectives = action.value.type == 'objectiveChange'
-  //         ? objectiveChanged(this.state, action.value)
-  //         : keyResultChanged(this.state, action.value);
-  //     } else if(action.type == Store.OKR_RATING_CHANGED) {
-  //       this.state.objectives = keyResultRatingChanged(this.state,
-  //         action.value.objectiveId,
-  //         action.value.keyResultId, action.value.value)
-  //     }
-  //
-  //     resolve();
-  //   });
-  // }
-  //
-  // canEdit() {
-  //   // Current viewer yet
-  //   if(!this.currentViewingUser) return false;
-  //   // Is the viewing user and admin
-  //   if(this.currentViewingUser.role == 'admin') return true;
-  //   // Is the viewing user the same as the okr owner
-  //   if(this.currentViewingUser.username == this.userId) return true;
-  //   // Not an admin validate if the user is the
-  //   if(this.state.auth) {
-  //     // Iterate over all the array entries
-  //     for(var auth of this.state.auth) {
-  //       if(auth.username == this.userId) {
-  //         if(auth.rights && auth.rights.indexOf('edit') != -1) return true;
-  //       }
-  //     }
-  //   }
-  //
-  //   return false;
-  // }
+  addNewKeyResult(objectiveId, text) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        yield self.store.addNewKeyResult(self.state._id, objectiveId, {
+          keyResult: text,
+          tags: [],
+          completeness: 0
+        });
+
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  addNewObjective(text) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        yield self.store.addNewObjective(self.state._id, {
+          objective: text,
+          tags: [],
+          keyResults: []
+        });
+
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  deleteKeyResult(objectiveId, keyResultId) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Delete the key result
+        yield self.store.deleteKeyResult(self.state._id, objectiveId, keyResultId);
+        // Resolve
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  deleteObjective(objectiveId) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Delete the key result
+        yield self.store.deleteObjective(self.state._id, objectiveId);
+        // Resolve
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  reload() {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Reload the store
+        self.state = yield self.store.loadOKR(self.state._id);
+        // Resolve it
+        resolve(self);
+      }).catch(reject);
+    });
+  }
 }

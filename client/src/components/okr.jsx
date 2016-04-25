@@ -41,18 +41,11 @@ export default React.createClass({
     }
   },
 
-  // Component became visible
-  componentDidMount: function() {
-    this.setState({
-      currentUser: this.props.currentUser,
-      user: this.props.user,
-      okr: this.props.okr,
-      tags: this.props.tags || []
-    });
-  },
-
   componentWillReceiveProps: function(nextProps) {
     this.setState({
+      currentUser: nextProps.currentUser,
+      user: nextProps.user,
+      okr: nextProps.okr,
       edit: typeof nextProps.edit == 'boolean' ? nextProps.edit : false,
       rate: typeof nextProps.rate == 'boolean' ? nextProps.rate : true,
       editOKR: typeof nextProps.edit == 'boolean' ? nextProps.edit : false,
@@ -61,17 +54,59 @@ export default React.createClass({
   },
 
   dispatch(event, message) {
+    var self = this;
+
     console.log("============================================== dispatch :: " + event)
     console.log(message)
     if(event == Actions.OKR_LINK) {
       return this.setState({linkIsOpen:true});
-    } else if(event == Actions.OKR_ADD_TAG) {
-      console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!OKR_ADD_TAG")
-      console.log(message)
-
+    } else if(event == Actions.OKR_ADD_TAGS) {
       return this.setState({addTagIsOpen:true, addTagData: message, tags: locateTags(message, this.props.okr)});
     } else if(event == Actions.OKR_DELETE_OBJECTIVE || event == Actions.OKR_DELETE_KEY_RESULT) {
       return this.setState({confirmDeleteOpen: true, confirmDeleteData: message});
+    } else if(event == Actions.OKR_SAVE_TAGS) {
+      return this.setState({addTagIsOpen: false});
+    } else if(event == Actions.OKR_ADD_NEW_OBJECTIVE) {
+      co(function*() {
+        // Save the new objective to the okr
+        yield self.state.okr.addNewObjective(message.text);
+        // Reload the okr
+        var okr = yield self.state.okr.reload();
+        // Update the state
+        self.setState({okr: okr});
+      }).catch(function(e) {
+
+      });
+
+      return;
+    } else if(event == Actions.OKR_ADD_NEW_KEY_RESULT) {
+      co(function*() {
+        // Save the new key result to the okr
+        yield self.state.okr.addNewKeyResult(message.objective_id, message.text);
+        // Reload the okr
+        var okr = yield self.state.okr.reload();
+        // Update the state
+        self.setState({okr: okr});
+      }).catch(function(e) {
+
+      });
+
+      return;
+    } else if(event == Actions.OKR_CONFIRM_DELETE) {
+      co(function*() {
+        // Delete a key result or a complete objective
+        if(message.objective_id && message.key_result_id) {
+          yield self.state.okr.deleteKeyResult(message.objective_id, message.key_result_id);
+        } else {
+          yield self.state.okr.deleteObjective(message.objective_id);
+        }
+
+        // Reload the okr
+        var okr = yield self.state.okr.reload();
+        // Update the state
+        self.setState({okr: okr});
+      }).catch(function(e) {
+      });
     }
 
     // Dispatch the event upwards
@@ -80,7 +115,8 @@ export default React.createClass({
 
   // Close any of the modal forms
   closeModal: function() {
-    this.setState({ addTagIsOpen:false,
+    this.setState({
+      addTagIsOpen:false,
       addObjectiveIsOpen: false,
       addKeyResultIsOpen:false,
       linkIsOpen: false,
@@ -144,6 +180,7 @@ export default React.createClass({
           tags={this.state.tags}
           suggestions={this.state.suggestions}
           data={this.state.addTagData}
+          dispatch={this.dispatch}
         />
 
         <AddObjective

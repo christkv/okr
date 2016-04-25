@@ -7,7 +7,7 @@ import {dispatch} from '../utils';
 
 export default React.createClass({
   onAddTag: function(e) {
-    dispatch(this.props, Actions.OKR_ADD_TAG, {key_result_id: this.props.data.id});
+    dispatch(this.props, Actions.OKR_ADD_TAGS, {key_result_id: this.props.data.id});
   },
 
   onRemoveKeyResult: function(e) {

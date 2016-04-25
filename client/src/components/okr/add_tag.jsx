@@ -4,6 +4,7 @@ import Store from '../../store';
 import co from 'co';
 import {WithContext} from 'react-tag-input';
 import Actions from '../../store/constants'
+import {dispatch} from '../utils';
 
 export default React.createClass({
   getInitialState: function() {
@@ -35,12 +36,7 @@ export default React.createClass({
   },
 
   saveChanges: function() {
-    // // Call the save handler
-    // if(this.props.onSaveChanges) this.props.onSaveChanges(Object.assign(this.props.data, {
-    //   tags: this.state.tags.map(function(tag) {
-    //     return tag.text;
-    //   })
-    // }));
+    dispatch(this.props, Actions.OKR_SAVE_TAGS, Object.assign(this.props.data, {tags: this.state.tags}))
   },
 
   handleDelete: function(i) {
