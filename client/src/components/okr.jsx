@@ -14,7 +14,7 @@ import ConfirmDelete from './okr/confirm_delete';
 //
 function locateTags(search, okr) {
   for(let objective of okr.objectives) {
-    if(objective.id == search.objective_id) {
+    if(objective._id == search.objective_id) {
       if(!search.key_result_id) return objective.tags || [];
 
       for(let keyResult of objective.keyResults) {
@@ -65,7 +65,35 @@ export default React.createClass({
     } else if(event == Actions.OKR_DELETE_OBJECTIVE || event == Actions.OKR_DELETE_KEY_RESULT) {
       return this.setState({confirmDeleteOpen: true, confirmDeleteData: message});
     } else if(event == Actions.OKR_SAVE_TAGS) {
-      return this.setState({addTagIsOpen: false});
+      co(function*() {
+        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS")
+        console.log(message)
+        // Create tags
+        var tags = message.tags.map(function(tag) {
+          return tag.text;
+        });
+
+        // Delete a key result or a complete objective
+        if(message.objective_id && message.key_result_id) {
+          console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS 0 : 1")
+          yield self.state.okr.updateKeyResultTags(message.objective_id, message.key_result_id, tags);
+        } else {
+          console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS 0 : 1")
+          yield self.state.okr.updateObjectiveTags(message.objective_id, tags);
+        }
+        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS 1")
+
+        // Reload the okr
+        var okr = yield self.state.okr.reload();
+        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS 2")
+        // Close the tag window
+        self.setState({addTagIsOpen: false, okr: okr});
+        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS 3")
+      }).catch(function(e) {
+        console.log(e.stack)
+      });
+
+      return;
     } else if(event == Actions.OKR_ADD_NEW_OBJECTIVE) {
       co(function*() {
         // Save the new objective to the okr
@@ -75,7 +103,6 @@ export default React.createClass({
         // Update the state
         self.setState({okr: okr});
       }).catch(function(e) {
-
       });
 
       return;
@@ -88,7 +115,6 @@ export default React.createClass({
         // Update the state
         self.setState({okr: okr});
       }).catch(function(e) {
-
       });
 
       return;
@@ -133,7 +159,7 @@ export default React.createClass({
     if(this.props.okr && this.props.okr.objectives) {
       objectives = this.props.okr.objectives.map((objective) => {
         return (
-          <Objective key={objective.id}
+          <Objective key={objective._id}
             data={objective}
             edit={this.state.editOKR}
             rate={this.state.rate}

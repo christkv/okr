@@ -20,8 +20,6 @@ export default React.createClass({
   },
 
   componentWillReceiveProps: function(nextProps) {
-    console.log("!!!!!!!!!!!!!!!!! componentWillReceiveProps")
-    console.log(nextProps)
     var tags = nextProps.tags || [];
     tags = tags.map(function(tag, index) {
       return {id: index, text: tag};

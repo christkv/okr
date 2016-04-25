@@ -12,24 +12,28 @@ export default React.createClass({
 
   // Objective changed
   onObjectiveChange: function(e) {
-    dispatch(this.props, Actions.OKR_OBJECTIVE_CHANGED, { objective_id: this.props.data.id, text: e.target.value });
+    dispatch(this.props, Actions.OKR_OBJECTIVE_CHANGED, { objective_id: this.props.data._id, text: e.target.value });
   },
 
   onLink: function(e) {
-    dispatch(this.props, Actions.OKR_LINK, { objective_id: this.props.data.id });
+    dispatch(this.props, Actions.OKR_LINK, { objective_id: this.props.data._id });
   },
 
   onRemoveObjective: function(e) {
-    dispatch(this.props, Actions.OKR_DELETE_OBJECTIVE, { objective_id: this.props.data.id });
+    dispatch(this.props, Actions.OKR_DELETE_OBJECTIVE, { objective_id: this.props.data._id });
   },
 
   // Add a tag
   onAddTag: function(e) {
-    dispatch(this.props, Actions.OKR_ADD_TAGS, { objective_id: this.props.data.id });
+    dispatch(this.props, Actions.OKR_ADD_TAGS, { objective_id: this.props.data._id });
   },
 
   dispatch(event, message) {
-    dispatch(this.props, event, Object.assign(message, { objective_id: this.props.data.id }));
+    // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ objective")
+    // console.log(message)
+    // console.log(this.props)
+    // console.log(Object.assign(message, { objective_id: this.props.data._id }))
+    dispatch(this.props, event, Object.assign(message, { objective_id: this.props.data._id }));
   },
 
   // Render the component
@@ -136,7 +140,7 @@ export default React.createClass({
         </table>
 
         <AddKeyResult
-          id={this.props.data.id}
+          id={this.props.data._id}
           isOpen={this.state.addKeyResultIsOpen}
           closeModal={() => {this.setState({addKeyResultIsOpen:false});}}
           dispatch={this.dispatch}

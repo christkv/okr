@@ -6,7 +6,7 @@ import co from 'co';
 // Handle objective text changed
 var objectiveChanged = function(state, change) {
   return state.objectives.map((objective) => {
-    if(objective.id == change.objectiveId) {
+    if(objective._id == change.objectiveId) {
       objective.objective = change.value;
       objective.modified = true;
     }
@@ -18,7 +18,7 @@ var objectiveChanged = function(state, change) {
 // Handle key result text changed
 var keyResultChanged = function(state, change) {
   return state.objectives.map(function(objective) {
-    if(objective.id == change.objectiveId) {
+    if(objective._id == change.objectiveId) {
       objective.keyResults = objective.keyResults.map((keyResult) => {
         if(keyResult.id == change.keyResultId) {
           keyResult.keyResult = change.value;
@@ -36,7 +36,7 @@ var keyResultChanged = function(state, change) {
 // Update the keyResult rating
 var keyResultRatingChanged = function(state, objectiveId, keyResultId, value) {
   return state.objectives.map(function(objective) {
-    if(objective.id == objectiveId) {
+    if(objective._id == objectiveId) {
       objective.keyResults = objective.keyResults.map((keyResult) => {
         if(keyResult.id == keyResultId) {
           keyResult.completeness = value;
@@ -113,7 +113,7 @@ export default class OKRs {
     return new Promise((resolve, reject) => {
       co(function*() {
         // Add new objective to okr
-        yield self.backend.addOKRKeyResult(id, objectiveId, keyResult);
+        yield self.backend.addOKRKeyResult(objectiveId, keyResult);
         // Resolve
         resolve();
       }).catch(reject);
@@ -126,20 +126,48 @@ export default class OKRs {
     return new Promise((resolve, reject) => {
       co(function*() {
         // Delete the key result
-        yield self.backend.deleteKeyResult(id, objectiveId, keyResultId);
+        yield self.backend.deleteKeyResult(objectiveId, keyResultId);
         // Resolve
         resolve();
       }).catch(reject);
     });
   }
 
-  deleteObjective(id, objectiveId) {
+  deleteObjective(objectiveId) {
     var self = this;
 
     return new Promise((resolve, reject) => {
       co(function*() {
         // Delete the key result
-        yield self.backend.deleteObjective(id, objectiveId);
+        yield self.backend.deleteObjective(objectiveId);
+        // Resolve
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  updateKeyResultTags(id, objectiveId, keyResultId, tags) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Delete the key result
+        yield self.backend.updateKeyResultTags(objectiveId, keyResultId, tags);
+        // Resolve
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  updateObjectiveTags(id, objectiveId, tags) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        console.log("== okr updateObjectiveTags store 0")
+        // Delete the key result
+        yield self.backend.updateObjectiveTags(objectiveId, tags);
+        console.log("== okr updateObjectiveTags store 1")
         // Resolve
         resolve();
       }).catch(reject);
@@ -209,6 +237,34 @@ class OKR {
       co(function*() {
         // Delete the key result
         yield self.store.deleteObjective(self.state._id, objectiveId);
+        // Resolve
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  updateKeyResultTags(objectiveId, keyResultId, tags) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Delete the key result
+        yield self.store.updateKeyResultTags(self.state._id, objectiveId, keyResultId, tags);
+        // Resolve
+        resolve();
+      }).catch(reject);
+    });
+  }
+
+  updateObjectiveTags(objectiveId, tags) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        console.log("== okr updateObjectiveTags 0")
+        // Delete the key result
+        yield self.store.updateObjectiveTags(self.state._id, objectiveId, tags);
+        console.log("== okr updateObjectiveTags 1")
         // Resolve
         resolve();
       }).catch(reject);

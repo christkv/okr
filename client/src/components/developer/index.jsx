@@ -74,6 +74,7 @@ var Menu = React.createClass({
         yield mongoClient.db('okr').collection('teams').deleteMany({});
         yield mongoClient.db('okr').collection('okrs').deleteMany({});
         yield mongoClient.db('okr').collection('tags').deleteMany({});
+        yield mongoClient.db('okr').collection('objectives').deleteMany({});
 
         // Add some tags
         var results = yield mongoClient.db('okr').collection('tags').insertMany([{
@@ -123,25 +124,29 @@ var Menu = React.createClass({
           },
         ]);
 
+        // Insert objectives
+        yield mongoClient.db('okr').collection('objectives').insertMany([{
+          _id: 1,
+          okr_id: 1,
+          objective: 'objective 1',
+          tags: ['core'],
+          keyResults: [{
+            id: 5,
+            completeness: 45,
+            keyResult: 'first key result',
+            tags: ['mandatory']
+          }, {
+            id: 6,
+            completeness: 15,
+            keyResult: 'second key result'
+          }]
+        }])
+
         // Insert some OKR's
         yield mongoClient.db('okr').collection('okrs').insertMany([{
+          _id: 1,
           username: 'ole',
           active: true,
-          objectives: [{
-            id: 1,
-            objective: 'objective 1',
-            tags: ['core'],
-            keyResults: [{
-              id: 5,
-              completeness: 45,
-              keyResult: 'first key result',
-              tags: ['mandatory']
-            }, {
-              id: 6,
-              completeness: 15,
-              keyResult: 'second key result'
-            }]
-          }],
           auth: [{
             rights: ['edit'],
             username: 'ole'

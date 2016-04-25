@@ -21,6 +21,7 @@ export default class MongoDBBackend {
     this.db = null;
     this.tags = null;
     this.okrs = null;
+    this.objectives = null;
     this.users = null;
   }
 
@@ -41,6 +42,7 @@ export default class MongoDBBackend {
         self.db = self.client.db('okr');
         self.tags = self.db.collection('tags');
         self.okrs = self.db.collection('okrs');
+        self.objectives = self.db.collection('objectives');
         self.users = self.db.collection('users');
         // Resolve
         resolve(self);
@@ -67,7 +69,12 @@ export default class MongoDBBackend {
         var okr = yield self.okrs
           .find({_id: id})
           .limit(1).next();
+        // No OKR found
         if(!okr) return reject(new Error(`could not locate active okr for ${id}`));
+        // Resolve the objectives
+        okr.objectives = yield self.objectives
+          .find({okr_id: okr._id})
+          .toArray();
         // Resolve the user
         resolve(okr);
       }).catch(handleReject(reject));
@@ -84,6 +91,10 @@ export default class MongoDBBackend {
           .find({username: username, active: true})
           .limit(1).next();
         if(!okr) return reject(new Error(`could not locate active okr for user ${username}`));
+        // Resolve the objectives
+        okr.objectives = yield self.objectives
+          .find({okr_id: okr._id})
+          .toArray();
         // Resolve the user
         resolve(okr);
       }).catch(handleReject(reject));
@@ -112,11 +123,12 @@ export default class MongoDBBackend {
       co(function*() {
         // Add id to objective if none exits
         if(!objective.id) objective.id = new ObjectId();
+        // Set the okr id
+        objective.okr_id = id;
 
         // Have the server send us the currently logged in user
-        var result = yield self.okrs
-          .updateOne({_id: id}, {$push: {objectives: objective}});
-        if(result.modifiedCount == 0) {
+        var result = yield self.objectives.insertOne(objective);
+        if(result.insertedCount == 0) {
           return reject(new Error(`failed to add objective to okr with id ${id}`))
         }
         // Resolve the user
@@ -125,7 +137,7 @@ export default class MongoDBBackend {
     });
   }
 
-  addOKRKeyResult(id, objectiveId, keyResult) {
+  addOKRKeyResult(objectiveId, keyResult) {
     var self = this;
 
     return new Promise((resolve, reject) => {
@@ -134,11 +146,11 @@ export default class MongoDBBackend {
         if(!keyResult.id) keyResult.id = new ObjectId();
 
         // Have the server send us the currently logged in user
-        var result = yield self.okrs
+        var result = yield self.objectives
           .updateOne({
-            _id: id, 'objectives.id': objectiveId
+            _id: objectiveId
           }, {
-            $push: {'objectives.$.keyResults': keyResult}
+            $push: {'keyResults': keyResult}
           });
 
         if(result.modifiedCount == 0) {
@@ -150,17 +162,17 @@ export default class MongoDBBackend {
     });
   }
 
-  deleteKeyResult(id, objectiveId, keyResultId) {
+  deleteKeyResult(objectiveId, keyResultId) {
     var self = this;
 
     return new Promise((resolve, reject) => {
       co(function*() {
         // Have the server send us the currently logged in user
-        var result = yield self.okrs
+        var result = yield self.objectives
           .updateOne({
-            _id: id, 'objectives.id': objectiveId
+            _id: objectiveId
           }, {
-            $pull: {'objectives.$.keyResults': {id: keyResultId}}
+            $pull: { keyResults: { id: keyResultId } }
           });
 
         // No modification happened the key result does not exist
@@ -174,17 +186,62 @@ export default class MongoDBBackend {
     });
   }
 
-  deleteObjective(id, objectiveId) {
+  deleteObjective(objectiveId) {
     var self = this;
 
     return new Promise((resolve, reject) => {
       co(function*() {
         // Have the server send us the currently logged in user
-        var result = yield self.okrs
+        var result = yield self.objectives
+          .deleteOne({
+            _id: objectiveId
+          });
+
+        // No modification happened the objective does not exist
+        if(result.deletedCount == 0) {
+          return reject(new Error(`could not locate objective with id ${objectiveId}`))
+        }
+        // Resolve the user
+        resolve(result);
+      }).catch(reject);
+    });
+  }
+
+  updateKeyResultTags(objectiveId, keyResultId, tags) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Have the server send us the currently logged in user
+        var result = yield self.objectives
           .updateOne({
-            _id: id
+            _id: objectiveId, 'keyResults.id': keyResultId
           }, {
-            $pull: {'objectives': {id: objectiveId}}
+            $set: {'keyResults.$.tags': tags}
+          });
+
+        // No modification happened the key result does not exist
+        if(result.deletedCount == 0) {
+          return reject(new Error(`could not locate key result with id ${keyResultId}`))
+        }
+
+        // Resolve the user
+        resolve(result);
+      }).catch(reject);
+    });
+  }
+
+  updateObjectiveTags(objectiveId, tags) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Have the server send us the currently logged in user
+        var result = yield self.objectives
+          .updateOne({
+            _id: objectiveId
+          }, {
+            $set: {'tags': tags}
           });
 
         // No modification happened the objective does not exist
@@ -238,7 +295,6 @@ export default class MongoDBBackend {
 
         // Resolve the teams the user is in
         if(user.reporting && user.reporting.teams) {
-          // console.log({username: {$in: user.teams.in}})
           user.reporting.teams = yield teams
             .find({username: {$in: user.reporting.teams}}).toArray();
 
