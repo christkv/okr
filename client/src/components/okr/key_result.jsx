@@ -27,20 +27,36 @@ export default React.createClass({
   },
 
   render: function() {
+    // Show the linked keyresult/objective
+    var linkType = this.props.data.link && this.props.data.link.key_result_id ? 'Key Result' : 'Objective';
+    var link = this.props.data.link
+      ? ( <div>
+            <label>[{linkType}]:</label>
+            <h7>{this.props.data.link.text}</h7>
+          </div> )
+      : ( <span/> );
+
+    // Set the name of the editor
     var name = `keyResult_${this.props.data.id}`;
-    console.log(name)
     // Handle if the component is in edit more or not
     var keyResult = this.props.edit
-      ? (<AceEditor
-          mode="markdown"
-          theme="github"
-          height={150}
-          width="100%"
-          name={name}
-          onChange={this.onChange}
-          editorProps={{$blockScrolling: true}}
-        /> )
-      : ( <label>{this.props.data.keyResult}</label> );
+      ? ( <div>
+            <AceEditor
+              mode="markdown"
+              theme="github"
+              height={150}
+              width="100%"
+              name={name}
+              onChange={this.onChange}
+              editorProps={{$blockScrolling: true}}
+            />
+            {link}
+          </div>)
+      : ( <div>
+          <label>{this.props.data.keyResult}</label>
+          {link}
+        </div>
+      );
 
     // Render any tags if they exist
     var tags = this.props.data.tags || [];

@@ -44,10 +44,25 @@ export default React.createClass({
         dispatch={this.dispatch} />
     });
 
+    // Show the linked keyresult/objective
+    var linkType = this.props.data.link && this.props.data.link.key_result_id ? 'Key Result' : 'Objective';
+    var link = this.props.data.link
+      ? ( <div>
+            <label>[{linkType}]:</label>
+            <h7>{this.props.data.link.text}</h7>
+          </div> )
+      : ( <span/> );
+
     // Handle if the component is in edit more or not
     var objective = this.props.edit
-      ? ( <input type='text' value={this.props.data.objective} onChange={this.onObjectiveChange}/> )
-      : ( <label>{this.props.data.objective}</label> );
+      ? ( <div>
+          <input type='text' value={this.props.data.objective} onChange={this.onObjectiveChange}/>
+          {link}
+        </div> )
+      : ( <div>
+          <label>{this.props.data.objective}</label>
+          {link}
+        </div> );
 
     // Objective calculation
     var okrCalculation = this.props.data.keyResults.map(function(keyResult) {
