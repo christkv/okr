@@ -81,6 +81,21 @@ export default class MongoDBBackend {
     });
   }
 
+  loadOKRByIds(ids) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Have the server send us the currently logged in user
+        var okrs = yield self.okrs
+          .find({_id: { $in: ids }})
+          .toArray();
+        // Resolve the user
+        resolve(okrs);
+      }).catch(handleReject(reject));
+    });
+  }
+
   loadOKR(username, currentViewingUser) {
     var self = this;
 
@@ -182,7 +197,7 @@ export default class MongoDBBackend {
 
         // Resolve the user
         resolve(result);
-      }).catch(reject);
+      }).catch(handleReject(reject));
     });
   }
 
@@ -203,7 +218,7 @@ export default class MongoDBBackend {
         }
         // Resolve the user
         resolve(result);
-      }).catch(reject);
+      }).catch(handleReject(reject));
     });
   }
 
@@ -227,7 +242,7 @@ export default class MongoDBBackend {
 
         // Resolve the user
         resolve(result);
-      }).catch(reject);
+      }).catch(handleReject(reject));
     });
   }
 
@@ -250,7 +265,114 @@ export default class MongoDBBackend {
         }
         // Resolve the user
         resolve(result);
-      }).catch(reject);
+      }).catch(handleReject(reject));
+    });
+  }
+
+  searchAll(searchTerm) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Search the objectives for matches
+        var results = yield self.objectives
+          .find({$text: {$search: searchTerm}})
+          .toArray();
+        // Resolve the user
+        resolve(results);
+      }).catch(handleReject(reject));
+    });
+  }
+
+  linkKeyResult(objectiveId, keyResultId, linkObjectiveId, linkKeyResultId) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Grab the link objective
+        var linkObjective = yield self.objectives
+              .find({_id: linkObjectiveId})
+              .limit(1).next();
+
+        // Find the text
+        if(linkKeyResultId) {
+          for(var i = 0; i < linkObjective.keyResults.length; i++) {
+            if(linkObjective.keyResults[i].id == linkKeyResultId) {
+              var text = linkObjective.keyResults[i].keyResult;
+              break;
+            }
+          }
+        } else {
+          var text = linkObjective.objective;
+        }
+
+        // Link object
+        var linkObject = linkKeyResultId
+          ? { objective_id: linkObjectiveId, key_result_id: linkKeyResultId, text: text }
+          : { objective_id: linkObjectiveId, text: text };
+
+        // Have the server send us the currently logged in user
+        var result = yield self.objectives
+          .updateOne({
+            _id: objectiveId, 'keyResults.id': keyResultId
+          }, {
+            $set: { 'keyResults.$.link': linkObject }
+          });
+
+        // No modification happened the objective does not exist
+        if(result.modifiedCount == 0) {
+          return reject(new Error(`could not locate objective with id ${objectiveId}`))
+        }
+
+        // Resolve the user
+        resolve();
+      }).catch(handleReject(reject));
+    });
+  }
+
+  linkObjective(objectiveId, linkObjectiveId, linkKeyResultId) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Grab the link objective
+        var linkObjective = yield self.objectives
+              .find({_id: linkObjectiveId})
+              .limit(1).next();
+
+        // Find the text
+        if(linkKeyResultId) {
+          for(var i = 0; i < linkObjective.keyResults.length; i++) {
+            if(linkObjective.keyResults[i].id == linkKeyResultId) {
+              var text = linkObjective.keyResults[i].keyResult;
+              break;
+            }
+          }
+        } else {
+          var text = linkObjective.objective;
+        }
+
+        // Link object
+        var linkObject = linkKeyResultId
+          ? { objective_id: linkObjectiveId, key_result_id: linkKeyResultId, text: text }
+          : { objective_id: linkObjectiveId, text: text };
+
+        // Have the server send us the currently logged in user
+        var result = yield self.objectives
+          .updateOne({
+            _id: objectiveId
+          }, {
+            $set: { 'link': linkObject }
+          });
+
+        // No modification happened the objective does not exist
+        if(result.modifiedCount == 0) {
+          return reject(new Error(`could not locate objective with id ${objectiveId}`))
+        }
+
+        // Resolve the user
+        resolve();
+      }).catch(handleReject(reject));
     });
   }
 

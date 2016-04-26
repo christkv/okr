@@ -56,70 +56,45 @@ export default React.createClass({
   dispatch(event, message) {
     var self = this;
 
-    console.log("============================================== dispatch :: " + event)
-    console.log(message)
-    if(event == Actions.OKR_LINK) {
-      return this.setState({linkIsOpen:true});
-    } else if(event == Actions.OKR_ADD_TAGS) {
-      return this.setState({addTagIsOpen:true, addTagData: message, tags: locateTags(message, this.props.okr)});
-    } else if(event == Actions.OKR_DELETE_OBJECTIVE || event == Actions.OKR_DELETE_KEY_RESULT) {
-      return this.setState({confirmDeleteOpen: true, confirmDeleteData: message});
-    } else if(event == Actions.OKR_SAVE_TAGS) {
-      co(function*() {
-        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS")
-        console.log(message)
+    co(function*() {
+      console.log("============================================== dispatch :: " + event)
+      console.log(message)
+      if(event == Actions.OKR_LINK) {
+        return self.setState({linkIsOpen:true, linkData: message});
+      } else if(event == Actions.OKR_ADD_TAGS) {
+        return self.setState({addTagIsOpen:true, addTagData: message, tags: locateTags(message, self.props.okr)});
+      } else if(event == Actions.OKR_DELETE_OBJECTIVE || event == Actions.OKR_DELETE_KEY_RESULT) {
+        return self.setState({confirmDeleteOpen: true, confirmDeleteData: message});
+      } else if(event == Actions.OKR_SAVE_TAGS) {
         // Create tags
-        var tags = message.tags.map(function(tag) {
-          return tag.text;
-        });
+        var tags = message.tags.map(function(tag) { return tag.text; });
 
         // Delete a key result or a complete objective
         if(message.objective_id && message.key_result_id) {
-          console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS 0 : 1")
           yield self.state.okr.updateKeyResultTags(message.objective_id, message.key_result_id, tags);
         } else {
-          console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS 0 : 1")
           yield self.state.okr.updateObjectiveTags(message.objective_id, tags);
         }
-        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS 1")
 
         // Reload the okr
         var okr = yield self.state.okr.reload();
-        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS 2")
         // Close the tag window
-        self.setState({addTagIsOpen: false, okr: okr});
-        console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! OKR_SAVE_TAGS 3")
-      }).catch(function(e) {
-        console.log(e.stack)
-      });
-
-      return;
-    } else if(event == Actions.OKR_ADD_NEW_OBJECTIVE) {
-      co(function*() {
+        return self.setState({addTagIsOpen: false, okr: okr});
+      } else if(event == Actions.OKR_ADD_NEW_OBJECTIVE) {
         // Save the new objective to the okr
         yield self.state.okr.addNewObjective(message.text);
         // Reload the okr
         var okr = yield self.state.okr.reload();
         // Update the state
-        self.setState({okr: okr});
-      }).catch(function(e) {
-      });
-
-      return;
-    } else if(event == Actions.OKR_ADD_NEW_KEY_RESULT) {
-      co(function*() {
+        return self.setState({okr: okr});
+      } else if(event == Actions.OKR_ADD_NEW_KEY_RESULT) {
         // Save the new key result to the okr
         yield self.state.okr.addNewKeyResult(message.objective_id, message.text);
         // Reload the okr
         var okr = yield self.state.okr.reload();
         // Update the state
-        self.setState({okr: okr});
-      }).catch(function(e) {
-      });
-
-      return;
-    } else if(event == Actions.OKR_CONFIRM_DELETE) {
-      co(function*() {
+        return self.setState({okr: okr});
+      } else if(event == Actions.OKR_CONFIRM_DELETE) {
         // Delete a key result or a complete objective
         if(message.objective_id && message.key_result_id) {
           yield self.state.okr.deleteKeyResult(message.objective_id, message.key_result_id);
@@ -130,13 +105,26 @@ export default React.createClass({
         // Reload the okr
         var okr = yield self.state.okr.reload();
         // Update the state
-        self.setState({okr: okr});
-      }).catch(function(e) {
-      });
-    }
+        return self.setState({okr: okr});
+      } else if(event == Actions.OKR_SAVE_LINK) {
+        if(message.objective_id && message.key_result_id) {
+          yield self.state.okr.linkKeyResult(message.objective_id, message.key_result_id,
+            message.link_objective_id, message.link_key_result_id);
+        } else {
+          yield self.state.okr.linkObjective(message.objective_id,
+            message.link_objective_id, message.link_key_result_id);
+        }
 
-    // Dispatch the event upwards
-    if(this.props.dispatch) this.props.dispatch(event, message);
+        // Reload the okr
+        var okr = yield self.state.okr.reload();
+        // Update the state
+        return self.setState({okr: okr});
+      }
+
+      // Dispatch the event upwards
+      if(self.props.dispatch) self.props.dispatch(event, message);
+    }).catch(function(e) {
+    });
   },
 
   // Close any of the modal forms
@@ -221,6 +209,7 @@ export default React.createClass({
           closeModal={this.closeModal}
           store={this.props.store}
           dispatch={this.dispatch}
+          data={this.state.linkData}
         />
 
         <ConfirmDelete

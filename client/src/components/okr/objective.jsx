@@ -29,10 +29,6 @@ export default React.createClass({
   },
 
   dispatch(event, message) {
-    // console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ objective")
-    // console.log(message)
-    // console.log(this.props)
-    // console.log(Object.assign(message, { objective_id: this.props.data._id }))
     dispatch(this.props, event, Object.assign(message, { objective_id: this.props.data._id }));
   },
 

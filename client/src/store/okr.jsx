@@ -94,6 +94,19 @@ export default class OKRs {
     });
   }
 
+  loadOKRs(ids) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Load a user by userId
+        var okr = yield self.backend.loadOKRByIds(ids);
+        // Resolve the user
+        resolve(okr);
+      }).catch(reject);
+    });
+  }
+
   addNewObjective(id, objective) {
     var self = this;
 
@@ -120,61 +133,38 @@ export default class OKRs {
     });
   }
 
-  deleteKeyResult(id, objectiveId, keyResultId) {
-    var self = this;
-
-    return new Promise((resolve, reject) => {
-      co(function*() {
-        // Delete the key result
-        yield self.backend.deleteKeyResult(objectiveId, keyResultId);
-        // Resolve
-        resolve();
-      }).catch(reject);
-    });
+  deleteKeyResult(objectiveId, keyResultId) {
+    return this.backend.deleteKeyResult(objectiveId, keyResultId);
   }
 
   deleteObjective(objectiveId) {
-    var self = this;
-
-    return new Promise((resolve, reject) => {
-      co(function*() {
-        // Delete the key result
-        yield self.backend.deleteObjective(objectiveId);
-        // Resolve
-        resolve();
-      }).catch(reject);
-    });
+    return this.backend.deleteObjective(objectiveId);
   }
 
-  updateKeyResultTags(id, objectiveId, keyResultId, tags) {
-    var self = this;
-
-    return new Promise((resolve, reject) => {
-      co(function*() {
-        // Delete the key result
-        yield self.backend.updateKeyResultTags(objectiveId, keyResultId, tags);
-        // Resolve
-        resolve();
-      }).catch(reject);
-    });
+  updateKeyResultTags(objectiveId, keyResultId, tags) {
+    return this.backend.updateKeyResultTags(objectiveId, keyResultId, tags);
   }
 
-  updateObjectiveTags(id, objectiveId, tags) {
-    var self = this;
+  updateObjectiveTags(objectiveId, tags) {
+    return this.backend.updateObjectiveTags(objectiveId, tags);
+  }
 
-    return new Promise((resolve, reject) => {
-      co(function*() {
-        console.log("== okr updateObjectiveTags store 0")
-        // Delete the key result
-        yield self.backend.updateObjectiveTags(objectiveId, tags);
-        console.log("== okr updateObjectiveTags store 1")
-        // Resolve
-        resolve();
-      }).catch(reject);
-    });
+  searchAll(searchTerm) {
+    return this.backend.searchAll(searchTerm);
+  }
+
+  linkKeyResult(objectiveId, keyResultId, linkObjectiveId, linkKeyResultId) {
+    return this.backend.linkKeyResult(objectiveId, keyResultId, linkObjectiveId, linkKeyResultId);
+  }
+
+  linkObjective(objectiveId, linkObjectiveId, linkKeyResultId) {
+    return this.backend.linkObjective(objectiveId, linkObjectiveId, linkKeyResultId);
   }
 }
 
+/*
+ * OKR Method
+ */
 class OKR {
   constructor(store, state) {
     this.store = store;
@@ -208,6 +198,7 @@ class OKR {
       co(function*() {
         yield self.store.addNewObjective(self.state._id, {
           objective: text,
+          username: self.state.username,
           tags: [],
           keyResults: []
         });
@@ -218,57 +209,27 @@ class OKR {
   }
 
   deleteKeyResult(objectiveId, keyResultId) {
-    var self = this;
-
-    return new Promise((resolve, reject) => {
-      co(function*() {
-        // Delete the key result
-        yield self.store.deleteKeyResult(self.state._id, objectiveId, keyResultId);
-        // Resolve
-        resolve();
-      }).catch(reject);
-    });
+    return this.store.deleteKeyResult(objectiveId, keyResultId);
   }
 
   deleteObjective(objectiveId) {
-    var self = this;
-
-    return new Promise((resolve, reject) => {
-      co(function*() {
-        // Delete the key result
-        yield self.store.deleteObjective(self.state._id, objectiveId);
-        // Resolve
-        resolve();
-      }).catch(reject);
-    });
+    return this.store.deleteObjective(objectiveId)
   }
 
   updateKeyResultTags(objectiveId, keyResultId, tags) {
-    var self = this;
-
-    return new Promise((resolve, reject) => {
-      co(function*() {
-        // Delete the key result
-        yield self.store.updateKeyResultTags(self.state._id, objectiveId, keyResultId, tags);
-        // Resolve
-        resolve();
-      }).catch(reject);
-    });
+    return this.store.updateKeyResultTags(objectiveId, keyResultId, tags);
   }
 
   updateObjectiveTags(objectiveId, tags) {
-    var self = this;
+    return this.store.updateObjectiveTags(objectiveId, tags);
+  }
 
-    return new Promise((resolve, reject) => {
-      co(function*() {
-        console.log("== okr updateObjectiveTags 0")
-        // Delete the key result
-        yield self.store.updateObjectiveTags(self.state._id, objectiveId, tags);
-        console.log("== okr updateObjectiveTags 1")
-        // Resolve
-        resolve();
-      }).catch(reject);
-    });
+  linkKeyResult(objectiveId, keyResultId, linkObjectiveId, linkKeyResultId) {
+    return this.store.linkKeyResult(objectiveId, keyResultId, linkObjectiveId, linkKeyResultId);
+  }
+
+  linkObjective(objectiveId, linkObjectiveId, linkKeyResultId) {
+    return this.store.linkObjective(objectiveId, linkObjectiveId, linkKeyResultId);
   }
 
   reload() {
@@ -282,5 +243,9 @@ class OKR {
         resolve(self);
       }).catch(reject);
     });
+  }
+
+  searchAll(searchTerm) {
+    return this.store.searchAll(searchTerm);
   }
 }

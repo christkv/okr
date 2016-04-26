@@ -69,6 +69,16 @@ var Menu = React.createClass({
         // Get the backend
         var mongoClient = store.backend.client;
 
+        // // Drop the database
+        // yield mongoClient.db('okr').command({dropDatabase:true});
+        // // Create the text index on the objectives
+        // yield mongoClient.db('okr').command({
+        //   createIndexes: 'objectives', indexes: [{
+        //     key: {objective: 'text', 'keyResults.keyResult': 'text'},
+        //     name: 'objective_text'
+        //   }]
+        // });
+
         // Delete all the users
         yield mongoClient.db('okr').collection('users').deleteMany({});
         yield mongoClient.db('okr').collection('teams').deleteMany({});
@@ -77,17 +87,13 @@ var Menu = React.createClass({
         yield mongoClient.db('okr').collection('objectives').deleteMany({});
 
         // Add some tags
-        var results = yield mongoClient.db('okr').collection('tags').insertMany([{
-          text: 'mandatory'
-        }, {
-          text: 'important'
-        }]);
+        var results = yield mongoClient.db('okr').collection('tags').insertMany([
+          { text: 'mandatory' },
+          { text: 'important' }]);
 
         // Add a team
         var results = yield mongoClient.db('okr').collection('teams').insertMany([{
-          username: 'nodejs',
-          name: 'Node.js team',
-          members: ['ole']
+          username: 'nodejs', name: 'Node.js team', members: ['ole']
         }]);
 
         // Insert a user an hierarchy
@@ -96,9 +102,7 @@ var Menu = React.createClass({
             roles: ['user'], avatar: 'https://pbs.twimg.com/profile_images/668854490347388928/OV9501o7.jpg',
             reporting: {
               managers: ['peter', 'anders'],
-              manages: {
-                people: [], teams: []
-              },
+              manages: { people: [], teams: [] },
               teams: ['nodejs']
             }
           }, {
@@ -106,9 +110,7 @@ var Menu = React.createClass({
             roles: ['user'], avatar: 'https://pbs.twimg.com/profile_images/668854490347388928/OV9501o7.jpg',
             reporting: {
               managers: ['boss'],
-              manages: {
-                people: [], teams: ['nodejs']
-              },
+              manages: { people: [], teams: ['nodejs'] },
               teams: ['leads']
             }
           }, {
@@ -116,9 +118,7 @@ var Menu = React.createClass({
             roles: ['user'], avatar: 'https://pbs.twimg.com/profile_images/668854490347388928/OV9501o7.jpg',
             reporting: {
               managers: ['boss'],
-              manages: {
-                people: ['ole'], teams: ['nodejs']
-              },
+              manages: { people: ['ole'], teams: ['nodejs'] },
               teams: ['leads']
             }
           },
@@ -126,31 +126,27 @@ var Menu = React.createClass({
 
         // Insert objectives
         yield mongoClient.db('okr').collection('objectives').insertMany([{
-          _id: 1,
-          okr_id: 1,
-          objective: 'objective 1',
-          tags: ['core'],
-          keyResults: [{
-            id: 5,
-            completeness: 45,
-            keyResult: 'first key result',
-            tags: ['mandatory']
-          }, {
-            id: 6,
-            completeness: 15,
-            keyResult: 'second key result'
-          }]
+          _id: 1, okr_id: 1, objective: 'objective 1', tags: ['core'],
+          keyResults: [
+            { id: 5, completeness: 45, keyResult: 'first key result', tags: ['mandatory'] },
+            { id: 6, completeness: 15, keyResult: 'second key result' } ]
+        }, {
+          _id: 2, okr_id: 2, objective: 'team objective 1', tags: ['core'],
+          keyResults: [
+            { id: 1, completeness: 0, keyResult: 'node.js key result 1', tags: ['mandatory'] },
+            { id: 2, completeness: 0, keyResult: 'node.js key result 2' } ]
+        }, {
+          _id: 3, okr_id: 2, objective: 'team objective 2', tags: ['core'],
+          keyResults: [
+            { id: 1, completeness: 0, keyResult: 'node.js key result 3' },
+            { id: 2, completeness: 0, keyResult: 'node.js key result 4' } ]
         }])
 
         // Insert some OKR's
         yield mongoClient.db('okr').collection('okrs').insertMany([{
-          _id: 1,
-          username: 'ole',
-          active: true,
-          auth: [{
-            rights: ['edit'],
-            username: 'ole'
-          }]
+          _id: 1, username: 'ole', name:'Ole Peterson', type: 'user', active: true
+        }, {
+          _id: 2, username: 'nodejs', name:'Node.js team', type: 'team', active: true
         }]);
 
         // Setup a scenario for a valid user as user view
