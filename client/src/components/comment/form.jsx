@@ -4,20 +4,29 @@ import {Image, Input, Button, ButtonToolbar} from 'react-bootstrap';
 import Textarea from 'react-textarea-autosize';
 import Comment from './comment';
 import DeleteDialog from './delete';
+import Actions from '../../store/constants';
+import {dispatch} from '../utils';
+
+var mergeWithContext = function(self, object) {
+  var context = { context: self.props.context || {}, user: self.props.user };
+  return Object.assign(object, context);
+}
 
 export default React.createClass({
   getInitialState: function() {
     return { commentText: '', comment: true, view: '' }
   },
 
+  componentWillReceiveProps: function(nextProps) {
+    this.setState({ commentText: '' });
+  },
+
   onCancel: function(e) {
-    if(this.props.onCancel) this.props.onCancel();
+    dispatch(this.props, Actions.COMMENT_FORM_CANCEL, mergeWithContext(this, {}));
   },
 
   onComment: function(e) {
-    if(this.props.onComment) this.props.onComment({
-      comment: this.state.commentText
-    });
+    dispatch(this.props, Actions.COMMENT_FORM_SUBMIT, mergeWithContext(this, {text: this.state.commentText}));
   },
 
   onFocus: function(e) {
@@ -103,8 +112,6 @@ export default React.createClass({
         </div>
       )
       : (<div/>);
-
-
 
     // Render the full form
     return (

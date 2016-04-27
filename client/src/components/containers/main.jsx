@@ -5,6 +5,7 @@ import TopMenu from '../menu/top';
 import SearchBar from '../search';
 import OKR from '../okr';
 import List from '../comment/list';
+import CommentForm from '../comment/form';
 import {default as SideBar} from 'react-sidebar';
 import Actions from '../../store/constants'
 import co from 'co';
@@ -83,9 +84,7 @@ export default React.createClass({
       console.log("+++++++++++++++++++++++ MAIN dispatch :: " + event)
       console.log(message)
 
-      if(event == Actions.OKR_COMMENT_BUTTON_CLICKED) {
-        return self.setState({ sideBarOpen: true });
-      } else if(event == Actions.OKR_ADD_COMMENT) {
+      if(event == Actions.OKR_ADD_COMMENT) {
         // Locate the objective from the okr
         if(message.objective_id) {
           // Use the objective id to grab the comments
@@ -98,14 +97,12 @@ export default React.createClass({
       } else if(event == Actions.COMMENT_REPLY) {
         if(message.id && message.text && message.user && message.context
           && message.context.objective_id && !message.context.key_result_id) {
-            console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 0")
           // Message from the user
           var from = {
             avatar: message.user.avatar,
             username: message.user.username,
             name: message.user.name,
           };
-          console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 1")
 
           // Add the reply to the comment
           yield self.props.store.Comment()
@@ -113,11 +110,9 @@ export default React.createClass({
               _id: message.id,
               objective_id: message.context.objective_id
             });
-            console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 2")
 
           // Use the objective id to grab the comments
-          var comments = yield self.props.store.Comment().loadObjectiveComments(message.objective_id);
-          console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 3")
+          var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
           // Open the side bar with the comments for the objective
           return self.setState({ comments: comments });
         }
@@ -128,19 +123,69 @@ export default React.createClass({
           yield self.props.store.Comment()
             .updateReply(message.comment_id, message.id, message.text);
           // Use the objective id to grab the comments
-          var comments = yield self.props.store.Comment().loadObjectiveComments(message.objective_id);
+          var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
           // Open the side bar with the comments for the objective
           return self.setState({ comments: comments });
         }
+      } else if(event == Actions.COMMENT_REPLY_DELETE) {
+        // Add the reply to the comment
+        yield self.props.store.Comment()
+          .deleteReply(message.comment_id, message.id);
+        // Use the objective id to grab the comments
+        var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+        // Open the side bar with the comments for the objective
+        return self.setState({ comments: comments });
       } else if(event == Actions.COMMENT_DELETE) {
-        if(message.id && message.comment_id) {
-          // Add the reply to the comment
-          yield self.props.store.Comment()
-            .deleteReply(message.comment_id, message.id);
+        // Create a comment for the objective and then reload the current objective
+        yield self.props.store.Comment().deleteComment(message.comment_id);
+        // Use the objective id to grab the comments
+        var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+        // Open the side bar with the comments for the objective
+        return self.setState({ comments: comments });
+      } else if(event == Actions.OKR_COMMENT_BUTTON_CLICKED) {
+        if(self.state.okr) {
+          // Get all the objectives
+          var objectiveIds = self.state.okr.objectives.map(function(objective) {
+            return objective._id;
+          });
           // Use the objective id to grab the comments
-          var comments = yield self.props.store.Comment().loadObjectiveComments(message.objective_id);
+          var comments = yield self.props.store.Comment().loadObjectiveComments(objectiveIds);
           // Open the side bar with the comments for the objective
-          return self.setState({ comments: comments });
+          return self.setState({ sideBarOpen: true, comments: comments });
+        }
+      } else if(event == Actions.COMMENT_FORM_CANCEL) {
+        return self.setState({ sideBarOpen: false });
+      } else if(event == Actions.COMMENT_FORM_SUBMIT) {
+        if(message.text && message.context
+          && message.context.objective_id) {
+          // From user
+          var from = {
+            avatar: message.user.avatar,
+            username: message.user.username,
+            name: message.user.name,
+          };
+
+          // Create a comment for the objective and then reload the current objective
+          yield self.props.store.Comment().addComment(from, message.text, {
+            objective_id: message.context.objective_id
+          });
+
+          // Use the objective id to grab the comments
+          var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+          // Open the side bar with the comments for the objective
+          return self.setState({ sideBarOpen: true, comments: comments, commentContext: { objective_id: message.context.objective_id } });
+        }
+      } else if(event == Actions.COMMENT_EDIT) {
+        if(message.comment_id && message.text && message.context
+          && message.context.objective_id) {
+
+          // Create a comment for the objective and then reload the current objective
+          yield self.props.store.Comment().updateComment(message.comment_id, message.text);
+
+          // Use the objective id to grab the comments
+          var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+          // Open the side bar with the comments for the objective
+          return self.setState({ sideBarOpen: true, comments: comments });
         }
       }
     }).catch(function(e) {
@@ -152,6 +197,16 @@ export default React.createClass({
   // Render the component
   //
   render: function() {
+    // Comment form
+    var form = !this.state.comments || this.state.comments.length == 0
+      ? ( <CommentForm
+          user={this.state.user}
+          context={this.state.commentContext}
+          dispatch={this.dispatch}
+        /> )
+      : ( <span/> );
+
+    // Side bar
     var sidebar = (
       <div className='sidebar'>
         <div  className='sidebar_btn_toolbar'>
@@ -161,6 +216,7 @@ export default React.createClass({
             </Button>
           </ButtonToolbar>
         </div>
+        {form}
         <List
           comments={this.state.comments}
           user={this.state.user}

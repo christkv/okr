@@ -138,15 +138,12 @@ export default class MongoDBBackend {
 
     return new Promise((resolve, reject) => {
       co(function*() {
-        // Add id to objective if none exits
-        if(!objective.id) objective.id = new ObjectId();
         // Set the okr id
         objective.okr_id = id;
-
         // Have the server send us the currently logged in user
         var result = yield self.objectives.insertOne(objective);
         if(result.insertedCount == 0) {
-          return reject(new Error(`failed to add objective to okr with id ${id}`))
+          return reject(new Error(`failed to add objective to okr`))
         }
         // Resolve the user
         resolve(result);
@@ -464,17 +461,102 @@ export default class MongoDBBackend {
   /*****************************************************************************
    * Comment Methods
    ****************************************************************************/
-  loadObjectiveComments(objectiveId) {
+  loadObjectiveComments(ids) {
     var self = this;
 
     return new Promise((resolve, reject) => {
       co(function*() {
+        console.log("== loadObjectiveComments")
+        console.log({objective_id: { $in: ids }})
         // Get the results
         var results = yield self.comments
-          .find({objective_id: objectiveId})
+          .find({objective_id: { $in: ids }})
           .toArray();
         // Resolve the user
         resolve(results);
+      }).catch(handleReject(reject));
+    });
+  }
+
+  addComment(from, message, tags) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Results from the update
+        var result = yield self.comments
+          .insertOne(Object.assign({
+            _id: new ObjectId(),
+            created: new Date(),
+            avatar: from.avatar,
+            from: from.name,
+            from_username: from.username,
+            message: message,
+            resolved: false
+          }, tags));
+
+        // No modification happened the objective does not exist
+        if(result.insertedCount == 0) {
+          return reject(new Error(`could not save comment`))
+        }
+
+        // Resolve the reply added
+        resolve();
+      }).catch(handleReject(reject));
+    });
+  }
+
+  updateComment(commentId, text) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Results from the update
+        var result = yield self.comments
+          .updateOne({
+            _id: commentId,
+          }, {
+            $set: { message: text }
+          });
+
+        // No modification happened the objective does not exist
+        if(result.modifiedCount == 0) {
+          return reject(new Error(`could not update comment`))
+        }
+
+        // Resolve the reply added
+        resolve();
+      }).catch(handleReject(reject));
+    });
+  }
+
+  deleteComment(commentId) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        console.log("== Comment deleteComment MONGODB 0")
+        if(commentId.toHexString) {
+          console.log(commentId.toHexString())
+        } else {
+          console.log(commentId)
+        }
+        // Results from the update
+        console.log({ _id: commentId })
+        var result = yield self.comments
+          .deleteOne({ _id: commentId });
+          console.log("== Comment deleteComment MONGODB 1")
+
+        console.log(result)
+
+        // No modification happened the objective does not exist
+        if(result.deletedCount == 0) {
+          return reject(new Error(`could not delete comment`))
+        }
+        console.log("== Comment deleteComment MONGODB 2")
+
+        // Resolve the reply added
+        resolve();
       }).catch(handleReject(reject));
     });
   }
@@ -488,8 +570,12 @@ export default class MongoDBBackend {
         var result = yield self.comments
           .updateOne(tags, {
             $push: { replies: {
-              _id: new ObjectId(), created: new Date(), avatar: from.avatar,
-              from: from.name, from_username: from.username, message: message
+              _id: new ObjectId(),
+              created: new Date(),
+              avatar: from.avatar,
+              from: from.name,
+              from_username: from.username,
+              message: message
             }}
           });
 

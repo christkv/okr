@@ -21,7 +21,7 @@ export default React.createClass({
   },
 
   onEdit: function(e) {
-    dispatch(this.props, Actions.COMMENT_EDIT, mergeWithContext(this, { comment_id: e.id, text: e.message }));
+    dispatch(this.props, Actions.COMMENT_EDIT, mergeWithContext(this, { comment_id: e.id, text: e.text }));
   },
 
   onReplyEdit: function(e) {
@@ -33,7 +33,14 @@ export default React.createClass({
   },
 
   onDeleteConfirmed: function(e) {
-    dispatch(this.props, Actions.COMMENT_DELETE, mergeWithContext(this, this.state.deleteEntry));
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! onDeleteConfirmed")
+    console.dir(this.state.deleteEntry)
+    if(this.state.deleteEntry.type == 'reply') {
+      dispatch(this.props, Actions.COMMENT_REPLY_DELETE, mergeWithContext(this, { comment_id: this.state.deleteEntry.comment_id, id: this.state.deleteEntry.id }));
+    } else {
+      dispatch(this.props, Actions.COMMENT_DELETE, mergeWithContext(this, { comment_id: this.state.deleteEntry.id }));
+    }
+
     // Set state to delete
     this.setState({delete: false, deleteEntry: null});
   },

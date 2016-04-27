@@ -10,7 +10,6 @@ export default React.createClass({
     return {keyResults: [], addKeyResultIsOpen: false};
   },
 
-  // Objective changed
   onObjectiveChange: function(e) {
     dispatch(this.props, Actions.OKR_OBJECTIVE_CHANGED, { objective_id: this.props.data._id, text: e.target.value });
   },
@@ -23,7 +22,6 @@ export default React.createClass({
     dispatch(this.props, Actions.OKR_DELETE_OBJECTIVE, { objective_id: this.props.data._id });
   },
 
-  // Add a tag
   onAddTag: function(e) {
     dispatch(this.props, Actions.OKR_ADD_TAGS, { objective_id: this.props.data._id });
   },
