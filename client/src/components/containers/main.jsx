@@ -60,8 +60,6 @@ export default React.createClass({
 
       // Load all the tags
       var tags = yield self.props.store.Tags().load();
-      console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-      console.log(tags)
 
       // Update the state
       self.setState(Object.assign({
@@ -78,10 +76,76 @@ export default React.createClass({
   //
   // All actions are dispatched through this handler
   //
-  dispatch(event, command) {
-    if(event == Actions.OKR_COMMENT_BUTTON_CLICKED) {
-      this.setState({ sideBarOpen: true });
-    }
+  dispatch(event, message) {
+    var self = this;
+
+    co(function*() {
+      console.log("+++++++++++++++++++++++ MAIN dispatch :: " + event)
+      console.log(message)
+
+      if(event == Actions.OKR_COMMENT_BUTTON_CLICKED) {
+        return self.setState({ sideBarOpen: true });
+      } else if(event == Actions.OKR_ADD_COMMENT) {
+        // Locate the objective from the okr
+        if(message.objective_id) {
+          // Use the objective id to grab the comments
+          var comments = yield self.props.store.Comment().loadObjectiveComments(message.objective_id);
+          // Open the side bar with the comments for the objective
+          return self.setState({ sideBarOpen: true, comments: comments, commentContext: { objective_id: message.objective_id } });
+        } else {
+          throw new Error('could not locate objective to comment on');
+        }
+      } else if(event == Actions.COMMENT_REPLY) {
+        if(message.id && message.text && message.user && message.context
+          && message.context.objective_id && !message.context.key_result_id) {
+            console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 0")
+          // Message from the user
+          var from = {
+            avatar: message.user.avatar,
+            username: message.user.username,
+            name: message.user.name,
+          };
+          console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 1")
+
+          // Add the reply to the comment
+          yield self.props.store.Comment()
+            .addCommentReply(from, message.text, {
+              _id: message.id,
+              objective_id: message.context.objective_id
+            });
+            console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 2")
+
+          // Use the objective id to grab the comments
+          var comments = yield self.props.store.Comment().loadObjectiveComments(message.objective_id);
+          console.log("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 3")
+          // Open the side bar with the comments for the objective
+          return self.setState({ comments: comments });
+        }
+      } else if(event == Actions.COMMENT_REPLY_EDIT) {
+        if(message.id && message.comment_id && message.text && message.context
+          && message.context.objective_id && !message.context.key_result_id) {
+          // Add the reply to the comment
+          yield self.props.store.Comment()
+            .updateReply(message.comment_id, message.id, message.text);
+          // Use the objective id to grab the comments
+          var comments = yield self.props.store.Comment().loadObjectiveComments(message.objective_id);
+          // Open the side bar with the comments for the objective
+          return self.setState({ comments: comments });
+        }
+      } else if(event == Actions.COMMENT_DELETE) {
+        if(message.id && message.comment_id) {
+          // Add the reply to the comment
+          yield self.props.store.Comment()
+            .deleteReply(message.comment_id, message.id);
+          // Use the objective id to grab the comments
+          var comments = yield self.props.store.Comment().loadObjectiveComments(message.objective_id);
+          // Open the side bar with the comments for the objective
+          return self.setState({ comments: comments });
+        }
+      }
+    }).catch(function(e) {
+      console.log(e.stack)
+    });
   },
 
   //
@@ -98,8 +162,10 @@ export default React.createClass({
           </ButtonToolbar>
         </div>
         <List
-          data={this.state.comments}
+          comments={this.state.comments}
           user={this.state.user}
+          context={this.state.commentContext}
+          dispatch={this.dispatch}
         />
       </div>
     );

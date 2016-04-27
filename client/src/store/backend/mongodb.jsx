@@ -23,6 +23,7 @@ export default class MongoDBBackend {
     this.okrs = null;
     this.objectives = null;
     this.users = null;
+    this.comments = null;
   }
 
   connect(url) {
@@ -44,6 +45,7 @@ export default class MongoDBBackend {
         self.okrs = self.db.collection('okrs');
         self.objectives = self.db.collection('objectives');
         self.users = self.db.collection('users');
+        self.comments = self.db.collection('comments');
         // Resolve
         resolve(self);
       }).catch(function(e) {
@@ -57,9 +59,9 @@ export default class MongoDBBackend {
     return this.client && this.client.isConnected();
   }
 
-  /*
+  /*****************************************************************************
    * OKR Methods
-   */
+   ****************************************************************************/
   loadOKRById(id) {
     var self = this;
 
@@ -376,9 +378,9 @@ export default class MongoDBBackend {
     });
   }
 
-  /*
+  /*****************************************************************************
    * User Methods
-   */
+   ****************************************************************************/
   loadCurrent() {
     var self = this;
 
@@ -455,6 +457,97 @@ export default class MongoDBBackend {
 
         // Resolve the user
         resolve(user);
+      }).catch(handleReject(reject));
+    });
+  }
+
+  /*****************************************************************************
+   * Comment Methods
+   ****************************************************************************/
+  loadObjectiveComments(objectiveId) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Get the results
+        var results = yield self.comments
+          .find({objective_id: objectiveId})
+          .toArray();
+        // Resolve the user
+        resolve(results);
+      }).catch(handleReject(reject));
+    });
+  }
+
+  addReply(from, message, tags) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Results from the update
+        var result = yield self.comments
+          .updateOne(tags, {
+            $push: { replies: {
+              _id: new ObjectId(), created: new Date(), avatar: from.avatar,
+              from: from.name, from_username: from.username, message: message
+            }}
+          });
+
+        // No modification happened the objective does not exist
+        if(result.modifiedCount == 0) {
+          return reject(new Error(`could not save comment reply`))
+        }
+
+        // Resolve the reply added
+        resolve();
+      }).catch(handleReject(reject));
+    });
+  }
+
+  updateReply(commentId, replyId, text) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Results from the update
+        var result = yield self.comments
+          .updateOne({
+            _id: commentId, 'replies._id': replyId
+          }, {
+            $set: { 'replies.$.message': text }
+          });
+
+        // No modification happened the objective does not exist
+        if(result.modifiedCount == 0) {
+          return reject(new Error(`could not update comment reply`))
+        }
+
+        // Resolve the reply added
+        resolve();
+      }).catch(handleReject(reject));
+    });
+  }
+
+  deleteReply(commentId, replyId) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Results from the update
+        var result = yield self.comments
+          .updateOne({
+            _id: commentId
+          }, {
+            $pull: { replies: { _id: replyId } }
+          });
+
+        // No modification happened the objective does not exist
+        if(result.modifiedCount == 0) {
+          return reject(new Error(`could not delete comment reply`))
+        }
+
+        // Resolve the reply added
+        resolve();
       }).catch(handleReject(reject));
     });
   }

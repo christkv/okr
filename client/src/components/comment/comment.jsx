@@ -79,7 +79,7 @@ export default React.createClass({
     if(this.props.onEdit) {
       this.props.onEdit({
         id: this.props.data.id,
-        message: message
+        text: message
       });
     }
   },
@@ -92,8 +92,7 @@ export default React.createClass({
     // Fire the onReply handler
     if(this.props.onReply) {
       this.props.onReply({
-        id: this.props.data.id,
-        message: this.state.reply
+        id: this.props.data.id, text: this.state.replyText, user: this.props.user
       });
     }
 

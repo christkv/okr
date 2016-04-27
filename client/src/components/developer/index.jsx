@@ -85,6 +85,7 @@ var Menu = React.createClass({
         yield mongoClient.db('okr').collection('okrs').deleteMany({});
         yield mongoClient.db('okr').collection('tags').deleteMany({});
         yield mongoClient.db('okr').collection('objectives').deleteMany({});
+        yield mongoClient.db('okr').collection('comments').deleteMany({});
 
         // Add some tags
         var results = yield mongoClient.db('okr').collection('tags').insertMany([
@@ -123,6 +124,18 @@ var Menu = React.createClass({
             }
           },
         ]);
+
+        // Insert comments
+        yield mongoClient.db('okr').collection('comments').insertMany([{
+          _id: 1,
+          objective_id: 1,
+          avatar: 'http://38.media.tumblr.com/avatar_b388702f3728_128.png',
+          created: new Date(),
+          from: 'Christian Kvalheim',
+          from_username: 'christkv',
+          message: 'hello mate, **how** are you',
+          resolved: false,
+        }]);
 
         // Insert objectives
         yield mongoClient.db('okr').collection('objectives').insertMany([{

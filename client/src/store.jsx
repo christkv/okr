@@ -4,6 +4,7 @@ import co from 'co';
 import OKRStore from './store/okr';
 import UserStore from './store/user';
 import TagStore from './store/tag';
+import CommentStore from './store/comment';
 import MongoDBBackend from './store/backend/mongodb';
 
 export default class Store {
@@ -15,6 +16,7 @@ export default class Store {
     this.okr = new OKRStore(this.backend);
     this.user = new UserStore(this.backend);
     this.tags = new TagStore(this.backend);
+    this.comment = new CommentStore(this.backend);
   }
 
   connect(url) {
@@ -44,5 +46,9 @@ export default class Store {
 
   Tags() {
     return this.tags;
+  }
+
+  Comment() {
+    return this.comment;
   }
 }

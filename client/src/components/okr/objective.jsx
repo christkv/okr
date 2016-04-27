@@ -28,6 +28,10 @@ export default React.createClass({
     dispatch(this.props, Actions.OKR_ADD_TAGS, { objective_id: this.props.data._id });
   },
 
+  onComment: function(e) {
+    dispatch(this.props, Actions.OKR_ADD_COMMENT, { objective_id: this.props.data._id });
+  },
+
   dispatch(event, message) {
     dispatch(this.props, event, Object.assign(message, { objective_id: this.props.data._id }));
   },
@@ -104,6 +108,13 @@ export default React.createClass({
           </OverlayTrigger> )
       : (<span/>);
 
+    // Create a comment button
+    var addComment = ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Add Comment">Add a comment about the objective.</Popover>}>
+          <button type="button" style={{fontSize:8, display: 'inline-block'}} className="btn btn-default btn-sm" onClick={this.onComment}>
+            Comment
+          </button>
+        </OverlayTrigger> );
+
     // Remote a add keyResult button
     var removeObjective = this.props.edit
       ? ( <OverlayTrigger placement="bottom" overlay={<Popover id='test' title="Remove an Objective">Remove an objective and all its Key Results.</Popover>}>
@@ -144,7 +155,7 @@ export default React.createClass({
               </td>
               <td colSpan="2">{objective}</td>
               <td><ProgressBar now={okrCalculation} label="%(percent)s%" /></td>
-              <td>{addKeyResult}<br/>{linkButton}<br/>{removeObjective}</td>
+              <td>{addComment}<br/>{addKeyResult}<br/>{linkButton}<br/>{removeObjective}</td>
             </tr>
             {keyResults}
           </tbody>

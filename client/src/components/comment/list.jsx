@@ -3,6 +3,13 @@ import co from 'co';
 import Form from './form';
 import Comment from './comment';
 import DeleteDialog from './delete';
+import Actions from '../../store/constants';
+import {dispatch} from '../utils';
+
+var mergeWithContext = function(self, object) {
+  var context = {context: self.props.context || {}};
+  return Object.assign(object, context);
+}
 
 export default React.createClass({
   getInitialState: function() {
@@ -10,25 +17,15 @@ export default React.createClass({
   },
 
   onReply: function(e) {
-    if(this.props.onReply) {
-      this.props.onReply(e);
-    }
+    dispatch(this.props, Actions.COMMENT_REPLY, mergeWithContext(this, e));
   },
 
   onEdit: function(e) {
-    if(this.props.onEdit) {
-      this.props.onEdit({
-        'type': 'comment', comment_id: e.id, text: e.message
-      });
-    }
+    dispatch(this.props, Actions.COMMENT_EDIT, mergeWithContext(this, { comment_id: e.id, text: e.message }));
   },
 
   onReplyEdit: function(e) {
-    if(this.props.onEdit) {
-      this.props.onEdit({
-        'type': 'reply', comment_id: e.comment_id, id: e.id, text: e.reply
-      });
-    }
+    dispatch(this.props, Actions.COMMENT_REPLY_EDIT, mergeWithContext(this, { comment_id: e.comment_id, id: e.id, text: e.reply }));
   },
 
   onDelete: function(e) {
@@ -36,8 +33,7 @@ export default React.createClass({
   },
 
   onDeleteConfirmed: function(e) {
-    // Propegate the delete event
-    if(this.props.onDelete) this.props.onDelete(this.state.deleteEntry);
+    dispatch(this.props, Actions.COMMENT_DELETE, mergeWithContext(this, this.state.deleteEntry));
     // Set state to delete
     this.setState({delete: false, deleteEntry: null});
   },
@@ -47,11 +43,11 @@ export default React.createClass({
   },
 
   onResolved: function(e) {
-    if(this.props.onResolved) this.props.onResolved(e);
+    dispatch(this.props, Actions.COMMENT_RESOLVED, mergeWithContext(this, e));
   },
 
   render: function() {
-    var comments = this.props.data.comments || [];
+    var comments = this.props.comments || [];
     var user = this.props.user || {};
 
     // Generate the objects
