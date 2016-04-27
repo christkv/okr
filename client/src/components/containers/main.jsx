@@ -89,6 +89,9 @@ export default React.createClass({
         if(message.objective_id) {
           // Use the objective id to grab the comments
           var comments = yield self.props.store.Comment().loadObjectiveComments(message.objective_id);
+          // var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
+          //   return comment._id
+          // }));
           // Open the side bar with the comments for the objective
           return self.setState({ sideBarOpen: true, comments: comments, commentContext: { objective_id: message.objective_id } });
         } else {
@@ -111,8 +114,11 @@ export default React.createClass({
               objective_id: message.context.objective_id
             });
 
-          // Use the objective id to grab the comments
-          var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+          // // Use the objective id to grab the comments
+          // var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+          var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
+            return comment._id
+          }));
           // Open the side bar with the comments for the objective
           return self.setState({ comments: comments });
         }
@@ -122,8 +128,11 @@ export default React.createClass({
           // Add the reply to the comment
           yield self.props.store.Comment()
             .updateReply(message.comment_id, message.id, message.text);
-          // Use the objective id to grab the comments
-          var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+          // // Use the objective id to grab the comments
+          // var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+          var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
+            return comment._id
+          }));
           // Open the side bar with the comments for the objective
           return self.setState({ comments: comments });
         }
@@ -131,15 +140,22 @@ export default React.createClass({
         // Add the reply to the comment
         yield self.props.store.Comment()
           .deleteReply(message.comment_id, message.id);
-        // Use the objective id to grab the comments
-        var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+        // // Use the objective id to grab the comments
+        // var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+        var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
+          return comment._id
+        }));
         // Open the side bar with the comments for the objective
         return self.setState({ comments: comments });
       } else if(event == Actions.COMMENT_DELETE) {
         // Create a comment for the objective and then reload the current objective
         yield self.props.store.Comment().deleteComment(message.comment_id);
-        // Use the objective id to grab the comments
-        var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+        // // Use the objective id to grab the comments
+        // var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+        var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
+          return comment._id
+        }));
+
         // Open the side bar with the comments for the objective
         return self.setState({ comments: comments });
       } else if(event == Actions.OKR_COMMENT_BUTTON_CLICKED) {
@@ -182,8 +198,11 @@ export default React.createClass({
           // Create a comment for the objective and then reload the current objective
           yield self.props.store.Comment().updateComment(message.comment_id, message.text);
 
-          // Use the objective id to grab the comments
-          var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+          // // Use the objective id to grab the comments
+          // var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+          var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
+            return comment._id
+          }));
           // Open the side bar with the comments for the objective
           return self.setState({ sideBarOpen: true, comments: comments });
         }

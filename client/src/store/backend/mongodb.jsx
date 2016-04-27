@@ -478,6 +478,23 @@ export default class MongoDBBackend {
     });
   }
 
+  loadComments(ids) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        console.log("== loadComments")
+        console.log({_id: { $in: ids }})
+        // Get the results
+        var results = yield self.comments
+          .find({_id: { $in: ids }})
+          .toArray();
+        // Resolve the user
+        resolve(results);
+      }).catch(handleReject(reject));
+    });
+  }
+
   addComment(from, message, tags) {
     var self = this;
 

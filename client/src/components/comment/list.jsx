@@ -7,7 +7,7 @@ import Actions from '../../store/constants';
 import {dispatch} from '../utils';
 
 var mergeWithContext = function(self, object) {
-  var context = {context: self.props.context || {}};
+  var context = {context: self.props.context || {}, comments: self.props.comments || []};
   return Object.assign(object, context);
 }
 

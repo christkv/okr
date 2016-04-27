@@ -29,6 +29,22 @@ export default class Store {
     });
   }
 
+  loadComments(ids) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        var objectiveIds = Array.isArray(ids) ? ids : [ids];
+        // Load a user by userId
+        var comments = yield self.backend.loadComments(objectiveIds);
+        // Resolve the user
+        resolve(comments.map(function(comment) {
+          return new Comment(self.backend, comment);
+        }));
+      }).catch(reject);
+    });
+  }
+
   addComment(from, message, tags) {
     var self = this;
 
