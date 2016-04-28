@@ -124,6 +124,7 @@ export default React.createClass({
       // Dispatch the event upwards
       if(self.props.dispatch) self.props.dispatch(event, message);
     }).catch(function(e) {
+      dispatch(self.props, Actions.ERROR, {error: e, context: {event: event, message: message}});
     });
   },
 
