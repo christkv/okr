@@ -21,12 +21,19 @@ var MainWrapper = React.createClass({
   },
 
   dispatch(event, message) {
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!! dispatch :: " + event)
-    console.log(message)
-
     if(event == Actions.ERROR) {
       this.state.errors.push(message.error);
       this.setState({ errors: this.state.errors });
+
+      // Fire off the timeout
+      setTimeout(() => {
+        var index = this.state.errors.indexOf(message.error);
+        if(index != -1) {
+          const newErrors = this.state.errors.slice();
+          newErrors.splice(index, 1);
+          this.setState({ errors: newErrors });
+        }
+      }, 5000);
     } else if(event == Actions.OKR_NAVIGATION_CHANGE){
       if(message.type == 'user') {
         browserHistory.push(`/user/${message.username}`);
@@ -37,7 +44,7 @@ var MainWrapper = React.createClass({
   handleErrorClose(index) {
     const newErrors = this.state.errors.slice();
     newErrors.splice(index, 1);
-    this.setState({ errors: newErrors });    
+    this.setState({ errors: newErrors });
   },
 
   render: function() {
@@ -109,6 +116,25 @@ var Menu = React.createClass({
         //   }]
         // });
 
+        // db.runCommand({
+        //   createIndexes: 'objectives', indexes: [{
+        //     key: {objective: 'text', 'keyResults.keyResult': 'text'},
+        //     name: 'objective_text'
+        //   }]
+        // });
+        // db.runCommand({
+        //   createIndexes: 'users', indexes: [{
+        //     key: {username: 'text', name: 'text'},
+        //     name: 'user_text'
+        //   }]
+        // });
+        // db.runCommand({
+        //   createIndexes: 'teams', indexes: [{
+        //     key: {username: 'text', name: 'text'},
+        //     name: 'team_text'
+        //   }]
+        // });
+
         // // Create the text index on the objectives
         // yield mongoClient.db('okr').command({
         //   createIndexes: 'users', indexes: [{
@@ -116,7 +142,7 @@ var Menu = React.createClass({
         //     name: 'user_text'
         //   }]
         // });
-
+        //
         // // Create the text index on the objectives
         // yield mongoClient.db('okr').command({
         //   createIndexes: 'teams', indexes: [{
