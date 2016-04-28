@@ -1,9 +1,8 @@
 "use strict"
 
-import Store from './constants';
 import co from 'co';
 
-export default class Users {
+export default class Store {
   constructor(backend) {
     this.backend = backend;
   }

@@ -8,6 +8,7 @@ import List from '../comment/list';
 import CommentForm from '../comment/form';
 import {default as SideBar} from 'react-sidebar';
 import Actions from '../../store/constants'
+import {dispatch} from '../utils';
 import co from 'co';
 
 export default React.createClass({
@@ -41,6 +42,7 @@ export default React.createClass({
   // Component browser route changed, we need to refresh out data
   //
   onRouteChanged: function(state) {
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! onRouteChanged")
     var self = this;
 
     co(function*() {
@@ -70,7 +72,7 @@ export default React.createClass({
         tagSuggestions: tags.map((x) => { return x.text; })
       }, state));
     }).catch(function(e) {
-      console.log(e.stack)
+      dispatch(self.props, Actions.ERROR, {error: e, context: {state: state, params: self.props.params}});
     });
   },
 
@@ -89,9 +91,6 @@ export default React.createClass({
         if(message.objective_id) {
           // Use the objective id to grab the comments
           var comments = yield self.props.store.Comment().loadObjectiveComments(message.objective_id);
-          // var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
-          //   return comment._id
-          // }));
           // Open the side bar with the comments for the objective
           return self.setState({ sideBarOpen: true, comments: comments, commentContext: { objective_id: message.objective_id } });
         } else {
@@ -114,11 +113,11 @@ export default React.createClass({
               objective_id: message.context.objective_id
             });
 
-          // // Use the objective id to grab the comments
-          // var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+          // Use the known comments to renew
           var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
             return comment._id
           }));
+
           // Open the side bar with the comments for the objective
           return self.setState({ comments: comments });
         }
@@ -128,8 +127,7 @@ export default React.createClass({
           // Add the reply to the comment
           yield self.props.store.Comment()
             .updateReply(message.comment_id, message.id, message.text);
-          // // Use the objective id to grab the comments
-          // var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+          // Use the known comments to renew
           var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
             return comment._id
           }));
@@ -140,8 +138,7 @@ export default React.createClass({
         // Add the reply to the comment
         yield self.props.store.Comment()
           .deleteReply(message.comment_id, message.id);
-        // // Use the objective id to grab the comments
-        // var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+        // Use the known comments to renew
         var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
           return comment._id
         }));
@@ -150,8 +147,7 @@ export default React.createClass({
       } else if(event == Actions.COMMENT_DELETE) {
         // Create a comment for the objective and then reload the current objective
         yield self.props.store.Comment().deleteComment(message.comment_id);
-        // // Use the objective id to grab the comments
-        // var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+        // Use the known comments to renew
         var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
           return comment._id
         }));
@@ -198,17 +194,39 @@ export default React.createClass({
           // Create a comment for the objective and then reload the current objective
           yield self.props.store.Comment().updateComment(message.comment_id, message.text);
 
-          // // Use the objective id to grab the comments
-          // var comments = yield self.props.store.Comment().loadObjectiveComments(message.context.objective_id);
+          // Use the known comments to renew
           var comments = yield self.props.store.Comment().loadComments(message.comments.map(function(comment) {
             return comment._id
           }));
           // Open the side bar with the comments for the objective
           return self.setState({ sideBarOpen: true, comments: comments });
         }
+      } else if(event == Actions.SEARCH_BAR_SUBMIT) {
+        // If we have a user let's navigate to the users okr
+        if(message.searchTerm
+          && typeof message.searchTerm == 'object' && message.searchTerm.type == 'user') {
+          dispatch(self.props, Actions.OKR_NAVIGATION_CHANGE, {type: message.searchTerm.type, username: message.searchTerm.username});
+        } else {
+          dispatch(self.props, Actions.ERROR, {error: new Error(`no user to team found for (${message.searchTerm})`), context: {event: event, message: message}});
+        }
+      } else {
+        dispatch(self.props, event, message);
       }
     }).catch(function(e) {
-      console.log(e.stack)
+      dispatch(self.props, Actions.ERROR, {error: e, context: {event: event, message: message}});
+    });
+  },
+
+  onSearchChange: function(searchTerm, callback) {
+    var self = this;
+
+    co(function*() {
+      // Search for the user/teams available
+      var suggestions = yield self.props.store.Search().searchTeamAndUsers(searchTerm);
+      // Return the suggestions
+      callback(suggestions);
+    }).catch(function(e) {
+      dispatch(self.props, Actions.ERROR, {error: e, context: {searchTerm: searchTerm}});
     });
   },
 
@@ -270,6 +288,8 @@ export default React.createClass({
                   label='Search'
                   disableButton={true}
                   placeholder='Search for user or team'
+                  dispatch={this.dispatch}
+                  onChange={this.onSearchChange}
                 />
               </Row>
               <Row>

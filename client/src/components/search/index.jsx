@@ -1,18 +1,7 @@
 import React from 'react';
 import SearchBar from './search_bar';
-
-// const matches = {
-//   'macbook a': [
-//     'macbook air 13 case',
-//     'macbook air 11 case',
-//     'macbook air charger'
-//   ],
-//   'macbook p': [
-//     'macbook pro 13 case',
-//     'macbook pro 15 case',
-//     'macbook pro charger'
-//   ]
-// };
+import Actions from '../../store/constants';
+import {dispatch} from '../utils';
 
 export default React.createClass({
   getInitialState: function() {
@@ -35,7 +24,7 @@ export default React.createClass({
   },
 
   onSearch: function(searchTerm) {
-    if(this.props.onSearch) this.props.onSearch(searchTerm);
+    dispatch(this.props, Actions.SEARCH_BAR_SUBMIT, {searchTerm: searchTerm});
   },
 
   // Render the component

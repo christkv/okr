@@ -6,6 +6,7 @@ import UserStore from './store/user';
 import TagStore from './store/tag';
 import CommentStore from './store/comment';
 import MongoDBBackend from './store/backend/mongodb';
+import SearchStore from './store/search';
 
 export default class Store {
   constructor(backend) {
@@ -17,6 +18,7 @@ export default class Store {
     this.user = new UserStore(this.backend);
     this.tags = new TagStore(this.backend);
     this.comment = new CommentStore(this.backend);
+    this.search = new SearchStore(this.backend);
   }
 
   connect(url) {
@@ -50,5 +52,9 @@ export default class Store {
 
   Comment() {
     return this.comment;
+  }
+
+  Search() {
+    return this.search;
   }
 }

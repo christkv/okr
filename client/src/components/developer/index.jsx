@@ -3,6 +3,8 @@ import { Router, Route, Link, browserHistory } from 'react-router';
 import Store from '../../store';
 import co from 'co';
 import Main from '../containers/main';
+import Errors from 'react-errors';
+import Actions from '../../store/constants';
 
 // CSS files
 import 'bootstrap/dist/css/bootstrap.css';
@@ -15,14 +17,42 @@ var store = new Store();
 // OKRWrapper
 var MainWrapper = React.createClass({
   getInitialState: function() {
-    return {};
+    return { errors: [] };
+  },
+
+  dispatch(event, message) {
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!! dispatch :: " + event)
+    console.log(message)
+
+    if(event == Actions.ERROR) {
+      this.state.errors.push(message.error);
+      this.setState({ errors: this.state.errors });
+    } else if(event == Actions.OKR_NAVIGATION_CHANGE){
+      if(message.type == 'user') {
+        browserHistory.push(`/user/${message.username}`);
+      }
+    }
+  },
+
+  handleErrorClose(index) {
+    const newErrors = this.state.errors.slice();
+    newErrors.splice(index, 1);
+    this.setState({ errors: newErrors });    
   },
 
   render: function() {
     return (
       <span>
         <a href='/'>Back</a>
-        <Main store={store} {...this.props}/>
+        <Main
+          dispatch={this.dispatch}
+          store={store}
+          {...this.props}
+        />
+        <Errors
+          errors={this.state.errors}
+          onErrorClose={this.handleErrorClose}
+        />
       </span>
     );
   }
@@ -76,6 +106,22 @@ var Menu = React.createClass({
         //   createIndexes: 'objectives', indexes: [{
         //     key: {objective: 'text', 'keyResults.keyResult': 'text'},
         //     name: 'objective_text'
+        //   }]
+        // });
+
+        // // Create the text index on the objectives
+        // yield mongoClient.db('okr').command({
+        //   createIndexes: 'users', indexes: [{
+        //     key: {username: 'text', name: 'text'},
+        //     name: 'user_text'
+        //   }]
+        // });
+
+        // // Create the text index on the objectives
+        // yield mongoClient.db('okr').command({
+        //   createIndexes: 'teams', indexes: [{
+        //     key: {username: 'text', name: 'text'},
+        //     name: 'team_text'
         //   }]
         // });
 
@@ -160,6 +206,8 @@ var Menu = React.createClass({
           _id: 1, username: 'ole', name:'Ole Peterson', type: 'user', active: true
         }, {
           _id: 2, username: 'nodejs', name:'Node.js team', type: 'team', active: true
+        }, {
+          _id: 3, username: 'anders', name:'Anders Anderson', type: 'user', active: true
         }]);
 
         // Setup a scenario for a valid user as user view

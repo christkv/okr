@@ -23,6 +23,10 @@ class SearchBar extends React.Component {
     };
   }
 
+  componentWillReceiveProps(nextProps) {
+    this.setState({ value: '' });
+  }
+
   componentDidMount() {
     if (this.props.autoFocus) {
       this.refs.input.focus();
@@ -30,7 +34,7 @@ class SearchBar extends React.Component {
   }
 
   normalizeInput() {
-    return this.state.value.toLowerCase().trim();
+    return this.state.value.toString().toLowerCase().trim();
   }
 
   autosuggest() {
@@ -73,6 +77,12 @@ class SearchBar extends React.Component {
     const {highlightedItem, suggestions} = this.initialState;
     this.setState({highlightedItem, suggestions});
     if (this.props.onSearch) {
+      // Do we have a selected suggestion return it
+      if(this.state.value) {
+        return this.props.onSearch(this.state.value);
+      }
+
+      // Return value
       this.props.onSearch(value);
     }
   }

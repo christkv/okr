@@ -47,7 +47,7 @@ class Suggestions extends React.Component {
             onTouchEnd={() => this.onTouchEnd(suggestion)}>
             <span>
               {searchTerm}
-              <strong>{suggestion.substr(searchTerm.length)}</strong>
+              <strong>{suggestion.toString().substr(searchTerm.length)}</strong>
             </span>
           </li>
         )}

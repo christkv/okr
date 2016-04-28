@@ -1,17 +1,8 @@
 "use strict"
 
-import Store from './constants';
 import co from 'co';
 
-var fakeTagsState = {
-  tags: [
-    {id:1, text: 'mandatory'},
-    {id:2, text: 'core'},
-    {id:3, text: 'driver'}
-  ]
-}
-
-export default class Tags {
+export default class Store {
   constructor(backend) {
     this.backend = backend;
   }

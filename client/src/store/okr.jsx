@@ -1,6 +1,5 @@
 "use strict"
 
-import Store from './constants';
 import co from 'co';
 
 // Handle objective text changed
@@ -50,7 +49,7 @@ var keyResultRatingChanged = function(state, objectiveId, keyResultId, value) {
   })
 }
 
-export default class OKRs {
+export default class Store {
   constructor(backend) {
     this.backend = backend;
   }

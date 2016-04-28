@@ -24,6 +24,7 @@ export default class MongoDBBackend {
     this.objectives = null;
     this.users = null;
     this.comments = null;
+    this.teams = null;
   }
 
   connect(url) {
@@ -46,6 +47,7 @@ export default class MongoDBBackend {
         self.objectives = self.db.collection('objectives');
         self.users = self.db.collection('users');
         self.comments = self.db.collection('comments');
+        self.teams = self.db.collection('teams');
         // Resolve
         resolve(self);
       }).catch(function(e) {
@@ -651,6 +653,37 @@ export default class MongoDBBackend {
 
         // Resolve the reply added
         resolve();
+      }).catch(handleReject(reject));
+    });
+  }
+
+  /*****************************************************************************
+   * Search Methods
+   ****************************************************************************/
+  searchTeamAndUsers(searchTerm) {
+    var self = this;
+
+    return new Promise((resolve, reject) => {
+      co(function*() {
+        // Search teams
+        var teams = yield self.teams
+          .find({$text: { $search: searchTerm }})
+          .toArray();
+        teams = teams.map(function(x) {
+            x.type = 'team';
+            return x;
+          });
+        // Search users
+        var users = yield self.users
+          .find({$text: { $search: searchTerm }})
+          .toArray();
+        users = users.map(function(x) {
+            x.type = 'user';
+            return x;
+          });
+
+        // Resolve the search
+        resolve(teams.concat(users));
       }).catch(handleReject(reject));
     });
   }

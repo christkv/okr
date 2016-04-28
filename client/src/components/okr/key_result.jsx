@@ -44,7 +44,7 @@ export default React.createClass({
             <AceEditor
               mode="markdown"
               theme="github"
-              height={150}
+              height={"150"}
               width="100%"
               name={name}
               onChange={this.onChange}
