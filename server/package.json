@@ -19,8 +19,12 @@
   "dependencies": {
     "browser-mongodb": "christkv/browser-mongodb#master",
     "co": "^4.6.0",
+    "connect-mongodb-session": "^1.1.1",
     "express": "^4.13.4",
+    "express-session": "^1.13.0",
     "mongodb": "^2.1.16",
+    "passport": "^0.3.2",
+    "passport-google-oauth20": "^1.0.0",
     "sharedb": "^0.11.35",
     "sharedb-mongo": "^0.8.7"
   },

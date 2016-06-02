@@ -2,25 +2,174 @@
 
 var express = require('express'),
   co = require('co'),
+  fs = require('fs'),
   CollaborationServer = require('./lib/collaboration_server'),
   MongoClient = require('mongodb').MongoClient,
-  BrowserMongoDBServer = require('./lib/browser_mongodb_server');
+  BrowserMongoDBServer = require('./lib/browser_mongodb_server'),
+  session = require('express-session'),
+  MongoDBStore = require('connect-mongodb-session')(session);
+
+// Passport and google auth
+var passport = require('passport'),
+  GoogleStrategy = require('passport-google-oauth20').Strategy,
+  credentials = require('./credentials.json');
+
+var dev = true;
+var secret = 'This is a secret';
+
+function devExpressSetup(app) {
+  var request = require('request');
+
+  function extractProfile (profile) {
+    var imageUrl = '';
+    if (profile.photos && profile.photos.length) {
+      imageUrl = profile.photos[0].value;
+    }
+
+    return {
+      id: profile.id,
+      displayName: profile.displayName,
+      image: imageUrl,
+      profile: profile
+    };
+  }
+
+  // Setup passport to handle sessions
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  // Setup passport
+  passport.use(new GoogleStrategy({
+    clientID: credentials.installed.client_id,
+    clientSecret: credentials.installed.client_secret,
+    callbackURL: credentials.installed.redirect_uris[0],
+    accessType: 'offline'
+  }, function (accessToken, refreshToken, profile, cb) {
+    console.log("AAAAA")
+    console.dir(profile)
+    // Extract the minimal profile information we need from the profile object
+    // provided by Google
+    cb(null, extractProfile(profile));
+  }));
+
+  passport.serializeUser(function (user, cb) {
+    cb(null, user);
+  });
+
+  passport.deserializeUser(function (obj, cb) {
+    cb(null, obj);
+  });
+
+  // Check if we are logged in
+  app.get('/', (req, res) => {
+    console.log("-------------------- /")
+    if(req.user) {
+      return request('http://localhost:8080/', function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          res.end(body);
+        }
+      })
+    }
+
+    // Redirect to auth
+    res.redirect('/auth/google');
+  });
+
+  app.get('/auth/google', passport.authenticate('google', {scope: ['profile']}), (req, res) => {
+    if(!req.user) return res.redirect('/');
+    console.log("-------------------- /auth/google")
+    res.end();
+  });
+
+  // Forward
+  app.get('/auth/google/callback', passport.authenticate('google'), (req, res) => {
+    if(!req.user) return res.redirect('/');
+    console.log("-------------------- /auth/google/callback")
+    // Clean up session
+    delete req.session.oauth2return;
+    // Redirect to front page again
+    res.redirect('/');
+  });
+
+  // Forward
+  app.get('/bundle.js', (req, res) => {
+    if(!req.user) return res.redirect('/');
+    console.log("-------------------- /bundle.js")
+    request('http://localhost:8080/bundle.js', function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        res.end(body);
+      }
+    })
+  });
+
+  app.get('*', (req, res) => {
+    console.log("-------------------- * :: " + req.url)
+    if(!req.user) return res.redirect('/');
+    request('http://localhost:8080/', function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        res.end(body);
+      }
+    })
+  });
+}
+
+// Set up any express configuration
+function expressSetup(app) {
+  if(dev) return devExpressSetup(app);
+  // // Set up expected production serving
+  // app.get('/bundle.js', (req, res) => {
+  //   fs.readFile(`${__dirname}/../frontend/dist/bundle.js`, 'utf8', (err, r) => {
+  //     res.end(r);
+  //   });
+  // });
+  //
+  // app.get('*', (req, res) => {
+  //   fs.readFile(`${__dirname}/../frontend/dist/index.html`, 'utf8', (err, r) => {
+  //     res.end(r);
+  //   });
+  // });
+}
 
 // Function start html express
-function boot(port, context) {
+function boot(port, url, context) {
   return new Promise((res, rej) => {
     co(function*() {
       // Create simple express application
       var app = express();
 
+      // Create a session store
+      var sessionStore = new MongoDBStore({ uri: url, collection: 'sessions' });
+
+      // Configure the session store
+      app.use(require('express-session')({
+           secret: secret,
+           cookie: {
+             maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+           },
+           store: sessionStore,
+           // Boilerplate options, see:
+           // * https://www.npmjs.com/package/express-session#resave
+           // * https://www.npmjs.com/package/express-session#saveuninitialized
+           resave: true, saveUninitialized: true
+         }));
+
+      // Catch errors
+      sessionStore.on('error', function(error) {
+      //  assert.ifError(error);
+      //  assert.ok(false);
+      });
+
       // Create http server
       var server = require('http').createServer(app);
+
+      // Set up the express aspects
+      expressSetup(app);
 
       // Connect http server
       server.listen(port, function() {
         console.log('Server listening at port %d', port);
         // Resolve
-        res({app: app, server: server});//, io: io});
+        res({app: app, server: server});
       });
 
       // Attach the mongodb browser library but use the io socket for the
@@ -43,6 +192,10 @@ function connect(url, options) {
     co(function*() {
       // Get the connection
       var db = yield MongoClient.connect(url, options);
+      // Create the needed indexes
+      var r = yield db.collection('objectives').ensureIndex({objective: 'text'});
+      r = yield db.collection('teams').ensureIndex({name: 'text'});
+      r = yield db.collection('users').ensureIndex({name: 'text'});
       // Create instance of shared db
       var server = yield new CollaborationServer(url).connect();
       // Create a new instance of BrowserMongoDBServer
@@ -69,10 +222,12 @@ class Server {
         self.context = yield connect(self.url, {
           db: { promoteLongs: false }
         });
-        // Drop the db
-        yield self.context.db.dropDatabase();
+
+        // // Drop the db
+        // yield self.context.db.dropDatabase();
+
         // Boot server
-        yield boot(self.port, self.context);
+        yield boot(self.port, self.url, self.context);
         resolve();
       }).catch(reject);
     });

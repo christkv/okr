@@ -1,7 +1,8 @@
 "use strict"
 
 var BrowserMongoDBServer = require('browser-mongodb').Server,
-  SocketIOTransport = require('browser-mongodb').SocketIOTransport;
+  SocketIOTransport = require('browser-mongodb').SocketIOTransport,
+  co = require('co');
 
 // Custom commands
 var CurrentUserCommand = require('./commands/current_user');
@@ -14,27 +15,30 @@ class Server {
 
   connect(httpServer) {
     var self = this;
-    // Create the browser server
-    this.server = new BrowserMongoDBServer(this.db, this.options);
-
-    // Register current user command
-    this.server.registerCommand('currentUser', CurrentUserCommand.schema, new CurrentUserCommand());
-
-    // Create socket transport
-    this.socketTransport = new SocketIOTransport(httpServer);
-    // Add a socket transport
-    this.server.registerHandler(this.socketTransport);
-    // Get the channel
-    this.channel = this.server.channel('mongodb');
-
-    // Add a before handler
-    this.channel.before(function(conn, channel, data, callback) {
-      callback();
-    });
 
     // Return a promise
     return new Promise((resolve, reject) => {
-      resolve(this.socketTransport.io);
+      co(function*() {
+        // Create the browser server
+        self.server = new BrowserMongoDBServer(self.db, self.options);
+
+        // Register current user command
+        self.server.registerCommand('currentUser', CurrentUserCommand.schema, new CurrentUserCommand());
+
+        // Create socket transport
+        self.socketTransport = new SocketIOTransport(httpServer);
+        // Add a socket transport
+        self.server.registerTransport(self.socketTransport);
+        // Get the channel
+        self.channel = yield self.server.createChannel('mongodb');
+
+        // Add a before handler
+        self.channel.before(function(conn, channel, data, callback) {
+          callback();
+        });
+
+        resolve(self.socketTransport.io);
+      }).catch(reject);
     });
   }
 
