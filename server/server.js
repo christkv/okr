@@ -11,11 +11,13 @@ var express = require('express'),
 
 // Passport and google auth
 var passport = require('passport'),
-  GoogleStrategy = require('passport-google-oauth20').Strategy,
-  credentials = require('./credentials.json');
+  GoogleStrategy = require('passport-google-oauth20').Strategy;
 
+// Parameters used
 var dev = true;
 var secret = 'This is a secret';
+var organizations = ['10gen', 'mongodb'];
+var credentials = require('./credentials.json');
 
 function devExpressSetup(app) {
   var request = require('request');
@@ -30,8 +32,28 @@ function devExpressSetup(app) {
       id: profile.id,
       displayName: profile.displayName,
       image: imageUrl,
+      organizations: profile._json.organizations,
       profile: profile
     };
+  }
+
+  function validate(req, res) {
+    console.log("!!!!!!!!!!!!!!! hey")
+    console.log("!req.user = " + !req.user)
+    console.log("req.user && !req.session.authenticated = " + (req.user && !req.session.authenticated))
+    console.log("req.user && !Array.isArray(req.user.organizations) = " + (req.user && !Array.isArray(req.user.organizations)))
+    if(!req.user) return res.redirect('/');
+    if(req.user && !req.session.authenticated) return res.redirect('/');
+    if(req.user && !Array.isArray(req.user.organizations)) return res.redirect('/');
+
+    // Are we a member of an allowed organization
+    for(var i = 0; i < req.user.organizations.length; i++) {
+      if(organizations.indexOf(req.user.organizations[i].name) != -1) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // Setup passport to handle sessions
@@ -45,8 +67,9 @@ function devExpressSetup(app) {
     callbackURL: credentials.installed.redirect_uris[0],
     accessType: 'offline'
   }, function (accessToken, refreshToken, profile, cb) {
-    console.log("AAAAA")
-    console.dir(profile)
+    // // if(!inValidOrganization)
+    // return cb(new Error("FAILED"));
+    // console.dir(profile)
     // Extract the minimal profile information we need from the profile object
     // provided by Google
     cb(null, extractProfile(profile));
@@ -63,7 +86,7 @@ function devExpressSetup(app) {
   // Check if we are logged in
   app.get('/', (req, res) => {
     console.log("-------------------- /")
-    if(req.user) {
+    if(req.user && req.session.authenticated) {
       return request('http://localhost:8080/', function (error, response, body) {
         if (!error && response.statusCode == 200) {
           res.end(body);
@@ -75,26 +98,35 @@ function devExpressSetup(app) {
     res.redirect('/auth/google');
   });
 
+  app.get('/auth/logout', (req, res) => {
+    console.log("-------------------- /auth/logout")
+    // Destroy session
+    req.session.destroy(function(e){
+      req.logout();
+      res.redirect('/');
+    });
+  });
+
   app.get('/auth/google', passport.authenticate('google', {scope: ['profile']}), (req, res) => {
-    if(!req.user) return res.redirect('/');
     console.log("-------------------- /auth/google")
     res.end();
   });
 
   // Forward
   app.get('/auth/google/callback', passport.authenticate('google'), (req, res) => {
-    if(!req.user) return res.redirect('/');
     console.log("-------------------- /auth/google/callback")
     // Clean up session
     delete req.session.oauth2return;
+    // Set the authenticated flag on the session
+    req.session.authenticated = true;
     // Redirect to front page again
     res.redirect('/');
   });
 
   // Forward
   app.get('/bundle.js', (req, res) => {
-    if(!req.user) return res.redirect('/');
     console.log("-------------------- /bundle.js")
+    if(!validate(req, res)) return;
     request('http://localhost:8080/bundle.js', function (error, response, body) {
       if (!error && response.statusCode == 200) {
         res.end(body);
@@ -104,7 +136,7 @@ function devExpressSetup(app) {
 
   app.get('*', (req, res) => {
     console.log("-------------------- * :: " + req.url)
-    if(!req.user) return res.redirect('/');
+    if(!validate(req, res)) return;
     request('http://localhost:8080/', function (error, response, body) {
       if (!error && response.statusCode == 200) {
         res.end(body);
